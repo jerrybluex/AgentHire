@@ -248,7 +248,7 @@ def mask_phone(phone: str) -> str:
 def generate_encrypted_field_hash(value: str) -> str:
     """
     Generate a hash of a sensitive field for lookup purposes.
-    Uses SHA256 without salt for consistent lookups.
+    Uses HMAC-SHA256 with salt for secure, consistent lookups.
 
     Args:
         value: Value to hash
@@ -257,7 +257,10 @@ def generate_encrypted_field_hash(value: str) -> str:
         Hex-encoded hash
     """
     import hashlib
-    return hashlib.sha256(value.encode()).hexdigest()
+    import hmac
+    import os
+    salt = os.environ.get("HASH_SALT", "")
+    return hmac.new(salt.encode(), value.encode(), hashlib.sha256).hexdigest()
 
 
 # Encryption service for use in services

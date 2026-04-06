@@ -7,7 +7,7 @@ Discovery Service
 """
 
 from typing import Optional
-from sqlalchemy import select, and_, or_
+from sqlalchemy import select, and_, or_, cast, String
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import SeekerProfile, JobPosting
@@ -61,7 +61,7 @@ class DiscoveryService:
         # 城市过滤
         if city:
             query = query.where(
-                JobPosting.location.op("->>")("city").ilike(f"%{city}%")
+                cast(JobPosting.location["city"], String).ilike(f"%{city}%")
             )
 
         # 技能过滤（使用 JSON contains，AND 匹配）
@@ -76,7 +76,7 @@ class DiscoveryService:
         # location 格式: {"city": "上海", "remote_strategy": "hybrid"}
         if remote_strategy:
             query = query.where(
-                JobPosting.location.op("->>")("remote_strategy").ilike(f"%{remote_strategy}%")
+                cast(JobPosting.location["remote_strategy"], String).ilike(f"%{remote_strategy}%")
             )
 
         # 薪资过滤

@@ -45,6 +45,8 @@ class ProfileListResponse(BaseModel):
     total: int = 0
     page: int = 1
     page_size: int = 20
+    has_next: bool = False
+    has_prev: bool = False
 
 
 @router.post(
@@ -233,6 +235,9 @@ async def list_profiles(
         offset=offset,
     )
 
+    has_next = (page * page_size) < total
+    has_prev = page > 1
+
     return ProfileListResponse(
         success=True,
         data=[
@@ -249,4 +254,6 @@ async def list_profiles(
         total=total,
         page=page,
         page_size=page_size,
+        has_next=has_next,
+        has_prev=has_prev,
     )

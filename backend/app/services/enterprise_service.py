@@ -31,6 +31,10 @@ def verify_password(password: str, password_hash: str) -> bool:
     return bcrypt.checkpw(password.encode(), password_hash.encode())
 
 
+# Default page size for paginated queries
+DEFAULT_PAGE_SIZE = 20
+
+
 class EnterpriseService:
     """Service for managing enterprises, API keys, and billing."""
 

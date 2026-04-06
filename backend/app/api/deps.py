@@ -195,7 +195,9 @@ async def get_current_admin(
     Validates that the X-Admin-Token header matches the ADMIN_TOKEN environment variable.
     """
     admin_token = request.headers.get("X-Admin-Token")
-    expected_token = os.environ.get("ADMIN_TOKEN", "dev-admin-token")
+    expected_token = os.environ.get("ADMIN_TOKEN")
+    if not expected_token:
+        raise RuntimeError("ADMIN_TOKEN environment variable must be set in production")
 
     if not admin_token or admin_token != expected_token:
         raise HTTPException(status_code=403, detail="Admin access required")

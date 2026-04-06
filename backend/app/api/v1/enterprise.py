@@ -16,7 +16,7 @@ from app.models import Enterprise, EnterpriseAPIKey, EnterpriseVerificationCase,
 from app.services.enterprise_service import enterprise_service, verify_password, hash_password
 from app.services.identity_service import identity_service
 from app.services.enterprise_verification_service import enterprise_verification_service
-from app.api.deps import get_current_user, CurrentUser
+from app.api.deps import get_current_user, CurrentUser, get_current_admin
 
 router = APIRouter()
 
@@ -78,6 +78,10 @@ class EnterpriseListResponse(BaseModel):
     success: bool = True
     data: list = Field(default_factory=list)
     total: int = 0
+    page: int = 1
+    page_size: int = 20
+    has_next: bool = False
+    has_prev: bool = False
 
 
 async def get_enterprise_from_header(
@@ -87,23 +91,6 @@ async def get_enterprise_from_header(
     """Get enterprise ID from header."""
     return x_enterprise_id, db
 
-
-async def get_current_admin(
-    request: Request,
-    db: AsyncSession = Depends(get_db),
-) -> dict:
-    """
-    Administrator authentication (temporary implementation).
-    Validates that the X-Admin-Token header matches the ADMIN_TOKEN environment variable.
-    """
-    import os
-    admin_token = request.headers.get("X-Admin-Token")
-    expected_token = os.environ.get("ADMIN_TOKEN", "dev-admin-token")
-
-    if not admin_token or admin_token != expected_token:
-        raise HTTPException(status_code=403, detail="Admin access required")
-
-    return {"role": "admin", "token": admin_token}
 
 
 @router.post(
@@ -424,6 +411,9 @@ async def list_enterprises(
     result = await db.execute(query)
     enterprises = result.scalars().all()
 
+    has_next = (page * page_size) < total
+    has_prev = page > 1
+
     return EnterpriseListResponse(
         success=True,
         data=[
@@ -439,6 +429,10 @@ async def list_enterprises(
             for e in enterprises
         ],
         total=total,
+        page=page,
+        page_size=page_size,
+        has_next=has_next,
+        has_prev=has_prev,
     )
 
 

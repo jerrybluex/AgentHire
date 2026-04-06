@@ -17,6 +17,10 @@ from app.models import Agent, generate_id
 from app.services.identity_service import identity_service
 
 
+# Maximum allowed timestamp drift (seconds) for agent signature verification
+MAX_TIMESTAMP_DRIFT = 60  # 1 minute
+
+
 class AgentService:
     """Service for managing agents (job seekers and employers)."""
 
@@ -106,9 +110,9 @@ class AgentService:
         Returns:
             agent_id if valid, None otherwise
         """
-        # Check timestamp (within 5 minutes)
+        # Check timestamp (within MAX_TIMESTAMP_DRIFT)
         current_time = int(datetime.utcnow().timestamp())
-        if abs(current_time - timestamp) > 300:  # 5 minutes
+        if abs(current_time - timestamp) > MAX_TIMESTAMP_DRIFT:
             return None
 
         # Get agent

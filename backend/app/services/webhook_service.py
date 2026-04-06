@@ -270,6 +270,13 @@ class WebhookService:
         secret: str,
     ) -> bool:
         """验证 Webhook 签名"""
+        # Validate payload structure before processing
+        try:
+            data = json.loads(payload)
+            if "event" not in data or "timestamp" not in data:
+                return False
+        except json.JSONDecodeError:
+            return False
         expected = self._sign_payload(json.loads(payload), secret)
         return hmac.compare_digest(f"sha256={expected}", signature)
 

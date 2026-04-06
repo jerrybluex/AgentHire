@@ -7,10 +7,12 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Header, Query, status
 from pydantic import BaseModel, Field
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.cache import get_cache, CacheManager
+from app.models import Job
 from app.services.job_service import job_service
 from app.services.enterprise_service import enterprise_service
 from app.services.discovery_service import discovery_service
@@ -48,6 +50,8 @@ class JobListResponse(BaseModel):
     total: int = 0
     page: int = 1
     page_size: int = 20
+    has_next: bool = False
+    has_prev: bool = False
 
 
 class JobSearchResponse(BaseModel):
@@ -172,6 +176,9 @@ async def list_jobs(
         offset=offset,
     )
 
+    has_next = (page * page_size) < total
+    has_prev = page > 1
+
     return JobListResponse(
         success=True,
         data=[
@@ -191,6 +198,8 @@ async def list_jobs(
         total=total,
         page=page,
         page_size=page_size,
+        has_next=has_next,
+        has_prev=has_prev,
     )
 
 
@@ -315,9 +324,28 @@ async def update_job(
     job_id: str,
     request: JobUpdateRequest,
     db: AsyncSession = Depends(get_db),
+    api_key_info: tuple = Depends(get_api_key_enterprise),
 ) -> JobResponse:
     """Update an existing job posting."""
-    job = await job_service.update_job(
+    enterprise_id, api_key_id = api_key_info
+    # 验证企业所有权
+    result = await db.execute(
+        select(Job).where(Job.id == job_id)
+    )
+    job = result.scalar_one_or_none()
+    if not job:
+        return JobResponse(
+            success=False,
+            data={},
+            message=f"Job not found: {job_id}",
+        )
+    if job.enterprise_id != enterprise_id:
+        return JobResponse(
+            success=False,
+            data={},
+            message="Not authorized to update this job",
+        )
+    updated_job = await job_service.update_job(
         db=db,
         job_id=job_id,
         job_data=request.job,
@@ -350,8 +378,27 @@ async def update_job(
 async def delete_job(
     job_id: str,
     db: AsyncSession = Depends(get_db),
+    api_key_info: tuple = Depends(get_api_key_enterprise),
 ) -> JobResponse:
     """Expire a job posting (soft delete)."""
+    enterprise_id, api_key_id = api_key_info
+    # 验证企业所有权
+    result = await db.execute(
+        select(Job).where(Job.id == job_id)
+    )
+    job = result.scalar_one_or_none()
+    if not job:
+        return JobResponse(
+            success=False,
+            data={},
+            message=f"Job not found: {job_id}",
+        )
+    if job.enterprise_id != enterprise_id:
+        return JobResponse(
+            success=False,
+            data={},
+            message="Not authorized to delete this job",
+        )
     deleted = await job_service.delete_job(db, job_id)
 
     if not deleted:
