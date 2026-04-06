@@ -1,0 +1,13 @@
+{
+  "company_name": "测试科技公司",
+  "password": "test123456",
+  "unified_social_credit_code": "91110000MA00EXAMPLE",
+  "contact": {
+    "name": "李经理",
+    "email": "li@ceshi.com",
+    "phone": "13800138000"
+  },
+  "industry": "互联网",
+  "company_size": "100-500人",
+  "description": "一家专注于AI的科技公司"
+}

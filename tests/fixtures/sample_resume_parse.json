@@ -1,0 +1,99 @@
+{
+  "parse_id": "parse_sample_001",
+  "confidence": 0.94,
+  "extracted_data": {
+    "basic_info": {
+      "name": "张三",
+      "phone": "138****8000",
+      "email": "zhangsan@example.com",
+      "location": "上海",
+      "gender": "男",
+      "age": 28
+    },
+    "work_experience": [
+      {
+        "company": "字节跳动",
+        "title": "高级后端工程师",
+        "duration": "2021.06 - 至今",
+        "years": 2.5,
+        "description": "负责抖音电商核心服务开发，主导订单系统重构，QPS从1万提升到10万",
+        "skills_used": ["Go", "微服务", "Kubernetes", "Redis", "Kafka"],
+        "achievements": ["主导重构订单系统，QPS提升300%", "设计并实现分布式事务解决方案"]
+      },
+      {
+        "company": "阿里巴巴",
+        "title": "Java开发工程师",
+        "duration": "2019.07 - 2021.05",
+        "years": 1.8,
+        "description": "负责淘宝活动系统开发，参与双11大促系统保障",
+        "skills_used": ["Java", "Spring", "MySQL", "Redis"],
+        "achievements": ["优化活动系统性能，响应时间降低50%"]
+      }
+    ],
+    "education": [
+      {
+        "school": "上海交通大学",
+        "major": "计算机科学与技术",
+        "degree": "本科",
+        "duration": "2015.09 - 2019.06"
+      }
+    ],
+    "skills": [
+      {"name": "Go", "level": "expert", "years": 2.5},
+      {"name": "Java", "level": "intermediate", "years": 3},
+      {"name": "Kubernetes", "level": "intermediate", "years": 2},
+      {"name": "微服务架构", "level": "expert", "years": 2},
+      {"name": "Redis", "level": "expert", "years": 4},
+      {"name": "MySQL", "level": "intermediate", "years": 4},
+      {"name": "Kafka", "level": "intermediate", "years": 2}
+    ],
+    "projects": [
+      {
+        "name": "高并发订单系统",
+        "description": "设计并实现支撑10万QPS的订单系统，解决分布式事务、库存扣减等核心问题",
+        "technologies": ["Go", "Redis", "Kafka", "etcd", "Kubernetes"],
+        "role": "技术负责人"
+      },
+      {
+        "name": "微服务治理平台",
+        "description": "开发服务注册发现、配置中心、熔断限流等基础组件",
+        "technologies": ["Go", "etcd", "gRPC", "Prometheus"],
+        "role": "核心开发"
+      }
+    ],
+    "self_evaluation": "5年后端开发经验，擅长高并发系统设计和微服务架构。有丰富的大厂工作经验，具备良好的技术视野和团队协作能力。",
+    "career_vector": [0.1, 0.3, 0.2, 0.25, 0.15],
+    "total_work_years": 4.3,
+    "current_salary": {
+      "monthly": 35000,
+      "currency": "CNY"
+    },
+    "expected_salary": {
+      "min_monthly": 40000,
+      "max_monthly": 60000
+    }
+  },
+  "summary": {
+    "text": "5年后端经验，字节跳动高工，Go/Java专家，求40k+机会",
+    "keywords": ["Go", "高并发", "微服务", "电商", "分布式系统"],
+    "job_intent_inferred": {
+      "target_roles": ["后端工程师", "架构师", "技术专家"],
+      "preferred_industries": ["互联网", "电商", "金融科技"],
+      "career_stage": "高级/资深"
+    }
+  },
+  "missing_or_unclear": [
+    "当前是否在职",
+    "是否接受远程办公",
+    "最快到岗时间"
+  ],
+  "raw_text_available": true,
+  "parse_metadata": {
+    "file_type": "pdf",
+    "file_size": 245760,
+    "page_count": 3,
+    "language": "zh",
+    "parser_version": "1.0.0",
+    "processing_time_ms": 2500
+  }
+}

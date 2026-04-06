@@ -1,0 +1,26 @@
+{
+  "job": {
+    "title": "高级Python工程师",
+    "department": "技术部",
+    "description": "负责平台后端开发",
+    "requirements": {
+      "skills_required": ["Python", "FastAPI", "PostgreSQL", "Docker"],
+      "experience_years_min": 3,
+      "experience_years_max": 5,
+      "education_level": "本科"
+    },
+    "compensation": {
+      "salary_range": {"min": 30000, "max": 50000, "currency": "CNY"},
+      "job_type": "full-time"
+    },
+    "location": {
+      "city": "上海",
+      "remote_strategy": "hybrid",
+      "address": "浦东新区张江"
+    }
+  },
+  "publish_options": {
+    "auto_publish": true,
+    "expires_in_days": 30
+  }
+}

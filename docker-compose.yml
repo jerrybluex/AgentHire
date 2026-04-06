@@ -1,0 +1,244 @@
+# 开发环境 Docker Compose 配置
+# AgentHire - AI Agent驱动的招聘平台
+
+services:
+  # FastAPI 后端服务
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: agenthire-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - /app/.venv
+    environment:
+      - ENVIRONMENT=development
+      - DB_URL=postgresql+asyncpg://${POSTGRES_USER:-agenthire}:${POSTGRES_PASSWORD:-agenthire123}@db:5432/${POSTGRES_DB:-agenthire}
+      - DB_USE_SQLITE=false
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin123}
+      - MINIO_BUCKET_NAME=${MINIO_BUCKET_NAME:-agenthire}
+      - MINIO_USE_SSL=false
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-dev-secret-key-change-in-production}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
+      - SECURITY_SECRET_KEY=${SECURITY_SECRET_KEY:-pyI8NbT7Bu0iEEDh2vF1dQPW67nEqm-KOcCqQMarTrY=}
+      # Email Configuration (Resend)
+      - EMAIL_ENABLED=${EMAIL_ENABLED:-true}
+      - EMAIL_BACKEND=${EMAIL_BACKEND:-resend}
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - FROM_EMAIL=${FROM_EMAIL:-onboarding@resend.dev}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - agenthire-network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Celery Worker - 异步任务处理
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: agenthire-worker
+    volumes:
+      - ./backend:/app
+      - /app/.venv
+    environment:
+      - ENVIRONMENT=development
+      - DB_URL=postgresql+asyncpg://${POSTGRES_USER:-agenthire}:${POSTGRES_PASSWORD:-agenthire123}@db:5432/${POSTGRES_DB:-agenthire}
+      - DB_USE_SQLITE=false
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin123}
+      - MINIO_BUCKET_NAME=${MINIO_BUCKET_NAME:-agenthire}
+      - MINIO_USE_SSL=false
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-dev-secret-key-change-in-production}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - agenthire-network
+    command: celery -A app.core.celery worker --loglevel=info --concurrency=2
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A app.core.celery inspect ping || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Celery Beat - 定时任务调度
+  scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: agenthire-scheduler
+    volumes:
+      - ./backend:/app
+      - /app/.venv
+    environment:
+      - ENVIRONMENT=development
+      - DB_URL=postgresql+asyncpg://${POSTGRES_USER:-agenthire}:${POSTGRES_PASSWORD:-agenthire123}@db:5432/${POSTGRES_DB:-agenthire}
+      - DB_USE_SQLITE=false
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin123}
+      - MINIO_BUCKET_NAME=${MINIO_BUCKET_NAME:-agenthire}
+      - MINIO_USE_SSL=false
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-dev-secret-key-change-in-production}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - agenthire-network
+    command: celery -A app.core.celery beat --loglevel=info
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep -v grep | grep 'celery beat' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # PostgreSQL + pgvector 数据库
+  db:
+    image: ankane/pgvector:v0.5.1
+    container_name: agenthire-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-agenthire}
+      - POSTGRES_USER=${POSTGRES_USER:-agenthire}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-agenthire123}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./devops/init-scripts:/docker-entrypoint-initdb.d:ro
+    networks:
+      - agenthire-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-agenthire} -d ${POSTGRES_DB:-agenthire}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    command: >
+      postgres
+      -c shared_preload_libraries=vector
+      -c max_connections=200
+      -c shared_buffers=256MB
+
+  # Redis 缓存和消息队列
+  redis:
+    image: redis:7-alpine
+    container_name: agenthire-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./devops/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - agenthire-network
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # MinIO 对象存储（开发环境用）
+  minio:
+    image: minio/minio:latest
+    container_name: agenthire-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY:-minioadmin123}
+      - MINIO_BROWSER=on
+    volumes:
+      - minio_data:/data
+    networks:
+      - agenthire-network
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Nginx 反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: agenthire-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./devops/nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+      - ./devops/nginx/logs:/var/log/nginx
+    depends_on:
+      - api
+    networks:
+      - agenthire-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries", "1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# 数据卷
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  minio_data:
+    driver: local
+
+# 网络
+networks:
+  agenthire-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

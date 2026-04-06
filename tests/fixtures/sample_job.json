@@ -1,0 +1,77 @@
+{
+  "job_id": "job_sample_001",
+  "enterprise_id": "ent_sample_001",
+  "api_key_id": "key_sample_001",
+  "title": "高级后端工程师",
+  "department": "技术部 - 基础架构组",
+  "description": "负责公司核心业务系统的架构设计和开发，解决高并发、高可用技术挑战。",
+  "responsibilities": [
+    "设计和开发高并发后端服务，支撑千万级用户访问",
+    "优化系统性能和稳定性，保障99.99%可用性",
+    "指导初中级工程师，进行技术方案评审",
+    "参与技术选型和技术规划，推动架构演进"
+  ],
+  "requirements": {
+    "skills": ["Go", "微服务", "Kubernetes", "Redis", "MySQL", "Kafka"],
+    "skill_weights": {
+      "Go": 1.0,
+      "微服务": 0.9,
+      "Kubernetes": 0.8,
+      "Redis": 0.7,
+      "MySQL": 0.6,
+      "Kafka": 0.6
+    },
+    "experience_min": 3,
+    "experience_max": 6,
+    "education": "本科及以上",
+    "other_requirements": [
+      "有大型互联网工作经验优先",
+      "有开源项目贡献者优先",
+      "具备良好的沟通能力和团队协作精神"
+    ]
+  },
+  "compensation": {
+    "salary_min": 35000,
+    "salary_max": 55000,
+    "currency": "CNY",
+    "stock_options": true,
+    "stock_details": {
+      "type": "期权",
+      "amount": "面议",
+      "vesting": "4年归属期"
+    },
+    "benefits": [
+      "五险一金",
+      "补充医疗保险",
+      "年度体检",
+      "弹性工作制",
+      "远程办公支持",
+      "技术书籍报销",
+      "技术大会参与机会"
+    ]
+  },
+  "location": {
+    "city": "上海",
+    "district": "浦东新区",
+    "address": "张江高科技园区科苑路88号",
+    "remote_policy": "hybrid",
+    "remote_days_per_week": 2
+  },
+  "job_vector": [0.15, 0.25, 0.2, 0.3, 0.28],
+  "status": "active",
+  "published_at": "2024-01-15T10:00:00Z",
+  "expires_at": "2024-02-15T10:00:00Z",
+  "match_threshold": 0.7,
+  "auto_match": true,
+  "company": {
+    "name": "未来科技有限公司",
+    "size": "100-500人",
+    "industry": "互联网/人工智能",
+    "stage": "B轮",
+    "website": "https://future-tech.example.com",
+    "logo_url": "https://example.com/logos/future-tech.png",
+    "verified": true
+  },
+  "created_at": "2024-01-15T10:00:00Z",
+  "updated_at": "2024-01-15T10:00:00Z"
+}

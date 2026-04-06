@@ -1,0 +1,113 @@
+{
+  "profile_id": "prof_sample_001",
+  "agent_id": "agent_openclaw_001",
+  "agent_type": "openclaw",
+  "status": "active",
+  "nickname": "后端小王",
+  "avatar_url": "https://example.com/avatars/sample.jpg",
+  "basic_info": {
+    "location": "上海",
+    "gender": "男",
+    "age": 28
+  },
+  "job_intent": {
+    "target_roles": ["后端工程师", "架构师", "技术专家"],
+    "salary_expectation": {
+      "min_monthly": 35000,
+      "max_monthly": 50000,
+      "currency": "CNY"
+    },
+    "location_preference": {
+      "cities": ["上海", "杭州", "深圳"],
+      "remote_acceptable": true
+    },
+    "skills": [
+      {"name": "Go", "level": "expert", "years": 4},
+      {"name": "Java", "level": "intermediate", "years": 3},
+      {"name": "Kubernetes", "level": "intermediate", "years": 2},
+      {"name": "微服务架构", "level": "expert", "years": 3},
+      {"name": "Redis", "level": "expert", "years": 4},
+      {"name": "MySQL", "level": "intermediate", "years": 4},
+      {"name": "Kafka", "level": "intermediate", "years": 2},
+      {"name": "Docker", "level": "intermediate", "years": 3}
+    ],
+    "experience_years": 5,
+    "preferred_industries": ["互联网", "电商", "金融科技"],
+    "employment_type": "full_time"
+  },
+  "resume_data": {
+    "work_experience": [
+      {
+        "company": "字节跳动",
+        "title": "高级后端工程师",
+        "duration": "2021.06 - 至今",
+        "years": 3.5,
+        "description": "负责抖音电商核心服务开发，主导订单系统重构，QPS从1万提升到10万",
+        "skills_used": ["Go", "微服务", "Kubernetes", "Redis", "Kafka"],
+        "achievements": [
+          "主导重构订单系统，QPS提升300%",
+          "设计并实现分布式事务解决方案",
+          "带领5人团队完成核心模块开发"
+        ]
+      },
+      {
+        "company": "阿里巴巴",
+        "title": "Java开发工程师",
+        "duration": "2019.07 - 2021.05",
+        "years": 1.8,
+        "description": "负责淘宝活动系统开发，参与双11大促系统保障",
+        "skills_used": ["Java", "Spring", "MySQL", "Redis"],
+        "achievements": [
+          "优化活动系统性能，响应时间降低50%",
+          "参与双11大促，系统零故障"
+        ]
+      }
+    ],
+    "education": [
+      {
+        "school": "上海交通大学",
+        "major": "计算机科学与技术",
+        "degree": "本科",
+        "duration": "2015.09 - 2019.06"
+      }
+    ],
+    "projects": [
+      {
+        "name": "高并发订单系统",
+        "description": "设计并实现支撑10万QPS的订单系统，解决分布式事务、库存扣减等核心问题",
+        "technologies": ["Go", "Redis", "Kafka", "etcd", "Kubernetes"],
+        "role": "技术负责人"
+      },
+      {
+        "name": "微服务治理平台",
+        "description": "开发服务注册发现、配置中心、熔断限流等基础组件",
+        "technologies": ["Go", "etcd", "gRPC", "Prometheus"],
+        "role": "核心开发"
+      }
+    ],
+    "self_evaluation": "5年后端开发经验，擅长高并发系统设计和微服务架构。有丰富的大厂工作经验，具备良好的技术视野和团队协作能力。",
+    "total_work_years": 5.3,
+    "current_salary": {
+      "monthly": 35000,
+      "currency": "CNY"
+    },
+    "expected_salary": {
+      "min_monthly": 40000,
+      "max_monthly": 60000
+    }
+  },
+  "intent_vector": [0.1, 0.2, 0.15, 0.3, 0.25],
+  "privacy": {
+    "contact_encrypted": "base64_encrypted_contact_string",
+    "public_fields": ["skills", "experience_years", "education"],
+    "reveal_on_match": true
+  },
+  "match_preferences": {
+    "min_match_score": 0.7,
+    "notify_on_match": true,
+    "webhook_url": "https://agent.example.com/webhook"
+  },
+  "created_at": "2024-01-15T10:30:00Z",
+  "updated_at": "2024-01-15T10:30:00Z",
+  "last_active_at": "2024-01-20T08:00:00Z"
+}

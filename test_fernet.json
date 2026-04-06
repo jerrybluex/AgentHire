@@ -1,0 +1,8 @@
+{
+  "name": "Fernet测试Agent",
+  "type": "seeker",
+  "platform": "openclaw",
+  "contact": {
+    "user_id": "test_fernet"
+  }
+}
