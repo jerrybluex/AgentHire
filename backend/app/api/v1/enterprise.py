@@ -647,6 +647,53 @@ async def approve_enterprise_verification(
 
 
 @router.post(
+    "/{enterprise_id}/verification/start-review",
+    response_model=EnterpriseResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Start enterprise verification review",
+    description="Start reviewing a submitted verification case (admin only). Transitions from submitted to under_review.",
+)
+async def start_enterprise_verification_review(
+    enterprise_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_admin),
+) -> EnterpriseResponse:
+    """Start reviewing a submitted enterprise verification case."""
+    case = await _get_verification_case_by_enterprise(db, enterprise_id)
+    if not case:
+        return EnterpriseResponse(
+            success=False,
+            data={},
+            message="Verification case not found for this enterprise",
+        )
+    if case.status != "submitted":
+        return EnterpriseResponse(
+            success=False,
+            data={"current_status": case.status},
+            message=f"Cannot start review. Current status must be 'submitted', but is '{case.status}'",
+        )
+    try:
+        updated_case = await enterprise_verification_service.start_review(
+            db, case.id, current_user["token"]
+        )
+        return EnterpriseResponse(
+            success=True,
+            data={
+                "verification_case_id": updated_case.id,
+                "status": updated_case.status,
+                "enterprise_id": enterprise_id,
+            },
+            message="Verification review started",
+        )
+    except Exception as e:
+        return EnterpriseResponse(
+            success=False,
+            data={},
+            message=f"Start review failed: {str(e)}",
+        )
+
+
+@router.post(
     "/{enterprise_id}/verification/reject",
     response_model=EnterpriseResponse,
     status_code=status.HTTP_200_OK,
