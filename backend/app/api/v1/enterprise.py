@@ -225,13 +225,15 @@ async def apply_enterprise(
             },
             message="Application submitted. Awaiting approval.",
         )
+    except ValueError as e:
+        raise ValidationException(message=str(e))
     except Exception as e:
-        return EnterpriseResponse(
-            success=False,
-            data={},
-            message=f"Application failed: {str(e)}",
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Application failed: " + str(e), exc_info=True)
+        raise HTTPException(
+            detail={"error": "INTERNAL_ERROR", "message": "Application failed: failed"}
         )
-
 
 @router.post(
     "/api-keys",
@@ -256,11 +258,7 @@ async def create_api_key(
     )
 
     if not result:
-        return EnterpriseResponse(
-            success=False,
-            data={},
-            message="Enterprise not found or not approved",
-        )
+        raise NotFoundException(message="Enterprise not found or not approved")
 
     return EnterpriseResponse(
         success=True,
@@ -330,34 +328,18 @@ async def enterprise_login(
     enterprise = await enterprise_service.get_enterprise_by_email(db, request.email)
 
     if not enterprise:
-        return EnterpriseResponse(
-            success=False,
-            data={},
-            message="该邮箱未注册企业账户",
-        )
+        raise NotFoundException(message="No enterprise account found for this email")
 
     # Check if approved
     if enterprise.status != "approved":
-        return EnterpriseResponse(
-            success=False,
-            data={"status": enterprise.status},
-            message=f"企业状态：{enterprise.status}，等待审核",
-        )
+            raise ValidationException(message=f"Enterprise status: {enterprise.status}, awaiting approval")
 
     # Verify password
     if enterprise.password_hash:
         if not request.password:
-            return EnterpriseResponse(
-                success=False,
-                data={},
-                message="请输入密码",
-            )
+                raise ValidationException(message="Password is required")
         if not verify_password(request.password, enterprise.password_hash):
-            return EnterpriseResponse(
-                success=False,
-                data={},
-                message="密码错误",
-            )
+                raise AuthenticationException(message="Invalid password")
 
     # Get API keys
     result = await db.execute(
@@ -486,11 +468,15 @@ async def upload_enterprise_file(
             },
             message="File uploaded successfully",
         )
+    except ValueError as e:
+        raise ValidationException(message=str(e))
     except Exception as e:
-        return EnterpriseResponse(
-            success=False,
-            data={},
-            message=f"Upload failed: {str(e)}",
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Upload failed: " + str(e), exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "INTERNAL_ERROR", "message": "Upload failed: failed"}
         )
 
 
@@ -509,11 +495,7 @@ async def verify_enterprise(
     enterprise = await enterprise_service.get_enterprise(db, request.enterprise_id)
 
     if not enterprise:
-        return EnterpriseResponse(
-            success=False,
-            data={},
-            message="Enterprise not found",
-        )
+            raise NotFoundException(message="Enterprise not found")
 
     if request.action == "approve":
         approved = await enterprise_service.approve_enterprise(
@@ -545,11 +527,7 @@ async def verify_enterprise(
             message="Enterprise rejected",
         )
     else:
-        return EnterpriseResponse(
-            success=False,
-            data={},
-            message="Invalid action. Use 'approve' or 'reject'",
-        )
+        raise ValidationException(message="Invalid action. Use 'approve' or 'reject'")
 
 
 async def _get_verification_case_by_enterprise(
@@ -582,11 +560,7 @@ async def submit_enterprise_verification(
     """Submit enterprise verification case for review."""
     case = await _get_verification_case_by_enterprise(db, enterprise_id)
     if not case:
-        return EnterpriseResponse(
-            success=False,
-            data={},
-            message="Verification case not found for this enterprise",
-        )
+        raise NotFoundException(message="Verification case not found for this enterprise")
     try:
         updated_case = await enterprise_verification_service.submit_for_review(db, case.id)
         return EnterpriseResponse(
@@ -597,11 +571,15 @@ async def submit_enterprise_verification(
             },
             message="Verification case submitted for review",
         )
+    except ValueError as e:
+        raise ValidationException(message=str(e))
     except Exception as e:
-        return EnterpriseResponse(
-            success=False,
-            data={},
-            message=f"Submit failed: {str(e)}",
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Submit failed: " + str(e), exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "INTERNAL_ERROR", "message": "Submit failed: failed"}
         )
 
 
@@ -621,11 +599,7 @@ async def approve_enterprise_verification(
     """Approve enterprise verification case."""
     case = await _get_verification_case_by_enterprise(db, enterprise_id)
     if not case:
-        return EnterpriseResponse(
-            success=False,
-            data={},
-            message="Verification case not found for this enterprise",
-        )
+        raise NotFoundException(message="Verification case not found for this enterprise")
     try:
         updated_case = await enterprise_verification_service.approve(
             db, case.id, current_user["token"], comment
@@ -647,11 +621,15 @@ async def approve_enterprise_verification(
             },
             message="Enterprise verification approved",
         )
+    except ValueError as e:
+        raise ValidationException(message=str(e))
     except Exception as e:
-        return EnterpriseResponse(
-            success=False,
-            data={},
-            message=f"Approval failed: {str(e)}",
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Approval failed: " + str(e), exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "INTERNAL_ERROR", "message": "Approval failed: failed"}
         )
 
 
@@ -670,17 +648,11 @@ async def start_enterprise_verification_review(
     """Start reviewing a submitted enterprise verification case."""
     case = await _get_verification_case_by_enterprise(db, enterprise_id)
     if not case:
-        return EnterpriseResponse(
-            success=False,
-            data={},
-            message="Verification case not found for this enterprise",
-        )
+        raise NotFoundException(message="Verification case not found for this enterprise")
     if case.status != "submitted":
-        return EnterpriseResponse(
-            success=False,
-            data={"current_status": case.status},
-            message=f"Cannot start review. Current status must be 'submitted', but is '{case.status}'",
-        )
+            raise ValidationException(
+                message=f"Cannot start review. Current status must be 'submitted', but is '{case.status}'"
+            )
     try:
         updated_case = await enterprise_verification_service.start_review(
             db, case.id, current_user["token"]
@@ -694,11 +666,15 @@ async def start_enterprise_verification_review(
             },
             message="Verification review started",
         )
+    except ValueError as e:
+        raise ValidationException(message=str(e))
     except Exception as e:
-        return EnterpriseResponse(
-            success=False,
-            data={},
-            message=f"Start review failed: {str(e)}",
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Start review failed: " + str(e), exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "INTERNAL_ERROR", "message": "Start review failed: failed"}
         )
 
 
@@ -718,11 +694,7 @@ async def reject_enterprise_verification(
     """Reject enterprise verification case."""
     case = await _get_verification_case_by_enterprise(db, enterprise_id)
     if not case:
-        return EnterpriseResponse(
-            success=False,
-            data={},
-            message="Verification case not found for this enterprise",
-        )
+        raise NotFoundException(message="Verification case not found for this enterprise")
     try:
         updated_case = await enterprise_verification_service.reject(
             db, case.id, current_user["token"], reason
@@ -744,11 +716,15 @@ async def reject_enterprise_verification(
             },
             message="Enterprise verification rejected",
         )
+    except ValueError as e:
+        raise ValidationException(message=str(e))
     except Exception as e:
-        return EnterpriseResponse(
-            success=False,
-            data={},
-            message=f"Rejection failed: {str(e)}",
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Rejection failed: " + str(e), exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "INTERNAL_ERROR", "message": "Rejection failed: failed"}
         )
 
 
@@ -767,11 +743,7 @@ async def get_current_enterprise(
     enterprise = await enterprise_service.get_enterprise(db, enterprise_id)
 
     if not enterprise:
-        return EnterpriseResponse(
-            success=False,
-            data={},
-            message="Enterprise not found",
-        )
+            raise NotFoundException(message="Enterprise not found")
 
     # Get API keys
     result = await db.execute(
