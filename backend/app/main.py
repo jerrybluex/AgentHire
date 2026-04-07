@@ -34,9 +34,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
     print(f"Environment: {settings.environment}")
     print(f"Debug mode: {settings.debug}")
 
-    # Initialize database (create tables if needed)
-    await init_db()
-    print("Database initialized")
+    # Initialize database connections (but not tables in production)
+    # Tables should be created via Alembic migrations in production
+    if not settings.is_production or settings.get("auto_create_tables", False):
+        await init_db()
+        print("Database tables created (development mode)")
+    else:
+        print("Skipping table creation - use Alembic migrations in production")
 
     # Initialize Redis connection
     await cache_manager.connect()
