@@ -106,6 +106,24 @@ class ConflictException(APIException):
         )
 
 
+class QuotaExceededException(APIException):
+    """Quota exceeded exception (rate limiting / billing)."""
+
+    def __init__(
+        self,
+        message: str = "Monthly quota exceeded",
+        retry_after: Optional[int] = None,
+        details: Optional[list[Dict[str, Any]]] = None
+    ):
+        super().__init__(
+            message=message,
+            error_code="QUOTA_EXCEEDED",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            details=details,
+        )
+        self.retry_after = retry_after
+
+
 def get_request_id(request: Request) -> Optional[str]:
     """Get request ID from request state."""
     return getattr(request.state, "request_id", None)
@@ -129,9 +147,14 @@ async def api_exception_handler(request: Request, exc: APIException) -> JSONResp
         request_id=get_request_id(request),
     )
 
+    headers = {}
+    if isinstance(exc, QuotaExceededException) and exc.retry_after:
+        headers["Retry-After"] = str(exc.retry_after)
+
     return JSONResponse(
         status_code=exc.status_code,
         content=response.model_dump(exclude_none=True),
+        headers=headers,
     )
 
 

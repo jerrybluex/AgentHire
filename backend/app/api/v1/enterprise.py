@@ -12,6 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.exceptions import ValidationException, NotFoundException, ConflictException, QuotaExceededException
 from app.models import Enterprise, EnterpriseAPIKey, EnterpriseVerificationCase, generate_id
 from app.services.enterprise_service import enterprise_service, verify_password, hash_password
 from app.services.identity_service import identity_service
@@ -177,11 +178,19 @@ async def register_enterprise(
             },
             message="Enterprise registered. Verification case created. Awaiting approval.",
         )
+    except ValueError as e:
+        # Validation errors (e.g., invalid company data)
+        raise ValidationException(message=str(e))
+    except ConflictException:
+        raise
     except Exception as e:
-        return EnterpriseResponse(
-            success=False,
-            data={},
-            message=f"Registration failed: {str(e)}",
+        # Log unexpected errors and return generic message
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Enterprise registration failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "INTERNAL_ERROR", "message": "Registration processing failed"}
         )
 
 
