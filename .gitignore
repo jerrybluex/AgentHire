@@ -66,3 +66,13 @@ backend/uploads/
 
 # Celery
 celerybeat-schedule
+
+# Runtime artifacts
+*.log
+backend/*.db
+uploads/
+htmlcov/
+.coverage
+__pycache__/
+*.pyc
+.pytest_cache/
