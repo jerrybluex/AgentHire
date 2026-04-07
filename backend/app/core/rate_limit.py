@@ -230,18 +230,34 @@ class RateLimiter:
         self,
         request: Request,
         enterprise_id: Optional[str] = None,
+        plan: str = "pay_as_you_go",
     ) -> dict:
-        """Get current rate limit usage for a client."""
+        """
+        Get current rate limit usage for a client.
+
+        Args:
+            request: FastAPI request
+            enterprise_id: Enterprise ID if authenticated
+            plan: Enterprise plan for rate limit tier (default: pay_as_you_go)
+
+        Returns:
+            Dict with usage, limit, and reset time for each time window
+        """
         key = self._get_client_key(request, enterprise_id)
+
+        # Get tier-specific limits
+        config = TIER_LIMITS.get(plan, DEFAULT_LIMITS)
+        if not enterprise_id:
+            config = DEFAULT_LIMITS
 
         minute_usage = await self.redis_client.get_usage(key + ":minute", 60)
         hour_usage = await self.redis_client.get_usage(key + ":hour", 3600)
         day_usage = await self.redis_client.get_usage(key + ":day", 86400)
 
         return {
-            "minute": {"used": minute_usage, "limit": 60, "reset_in": 60},
-            "hour": {"used": hour_usage, "limit": 3600, "reset_in": 3600 - int(time.time() % 3600)},
-            "day": {"used": day_usage, "limit": 86400, "reset_in": 86400 - int(time.time() % 86400)},
+            "minute": {"used": minute_usage, "limit": config.requests_per_minute, "reset_in": 60},
+            "hour": {"used": hour_usage, "limit": config.requests_per_hour, "reset_in": 3600 - int(time.time() % 3600)},
+            "day": {"used": day_usage, "limit": config.requests_per_day, "reset_in": 86400 - int(time.time() % 86400)},
         }
 
 
