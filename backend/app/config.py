@@ -76,19 +76,27 @@ class SecuritySettings(BaseSettings):
     @field_validator("secret_key", mode="before")
     @classmethod
     def validate_secret_key(cls, v: Optional[str]) -> str:
-        """Ensure secret key is set. Generate random one for dev if missing."""
+        """
+        Ensure secret key is set.
+
+        CRITICAL: This key is used for Fernet encryption of sensitive data.
+        If the key changes, all encrypted data becomes permanently unreadable.
+
+        Generate a secure key:
+        python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())'
+        """
         if v:
             return v
+
         import os
         env = os.environ.get("ENVIRONMENT", "development").lower()
-        if env == "production":
-            raise ValueError(
-                "SECURITY_SECRET_KEY must be set in production. "
-                "Generate one with: python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())'"
-            )
-        # Development: generate ephemeral key (changes on restart, data won't persist)
-        import secrets
-        return secrets.token_urlsafe(32)
+
+        # ALL environments require explicit secret key to prevent data loss
+        raise ValueError(
+            f"SECURITY_SECRET_KEY must be set in {env} environment. "
+            "This key encrypts sensitive data. If it changes, encrypted data becomes unreadable. "
+            "Generate one with: python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())'"
+        )
     algorithm: str = Field(default="HS256", description="JWT algorithm")
     access_token_expire_minutes: int = Field(
         default=30,

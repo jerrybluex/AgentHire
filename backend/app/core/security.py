@@ -101,14 +101,32 @@ def decrypt_value(encrypted_value: str, purpose: str = "default") -> str:
 
     Returns:
         Decrypted plain text string
+
+    Raises:
+        InvalidToken: If decryption fails (wrong key or corrupted data)
     """
     if not encrypted_value:
         return encrypted_value
 
     manager = get_encryption_manager()
     fernet = manager.get_fernet(purpose)
-    decrypted = fernet.decrypt(encrypted_value.encode())
-    return decrypted.decode()
+    try:
+        decrypted = fernet.decrypt(encrypted_value.encode())
+        return decrypted.decode()
+    except InvalidToken as e:
+        # Log detailed error for debugging, but raise clear error
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(
+            f"Decryption failed for purpose='{purpose}'. "
+            f"This usually means the SECURITY_SECRET_KEY has changed since the data was encrypted. "
+            f"Check that your .env file contains the correct key."
+        )
+        raise InvalidToken(
+            f"Unable to decrypt data: encryption key mismatch. "
+            f"The SECURITY_SECRET_KEY may have changed since this data was encrypted. "
+            f"Original error: {e}"
+        ) from e
 
 
 def encrypt_dict(data: dict, fields: list[str], purpose: str = "default") -> dict:
