@@ -214,7 +214,7 @@ class EnterpriseService:
 
         # Check monthly quota enforcement
         api_key_result = await db.execute(
-            select(EnterpriseAPIKey).where(EnterpriseAPIKey.id == api_key_id)
+            select(EnterpriseAPIKey).where(EnterpriseAPIKey.id == api_key_id).with_for_update()
         )
         api_key = api_key_result.scalar_one_or_none()
         if api_key and api_key.monthly_quota is not None:
