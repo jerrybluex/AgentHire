@@ -1,43 +1,68 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Virtual environments
-.venv/
-venv/
-ENV/
-
-# IDE
+# OS / editor
+.DS_Store
+Thumbs.db
 .idea/
 .vscode/
 *.swp
 *.swo
 
-# Docker
-.env.local
-.env.*.local
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
-# Database
-*.db
-*.sqlite3
+# Node / frontend
+node_modules/
+frontend/.next/
+.next/
+out/
 
-# Logs
-*.log
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Build
+# Build / coverage / reports
 dist/
 build/
 *.egg-info/
+htmlcov/
+.coverage
+.coverage.*
+coverage/
+pytest_output.txt
+test_security_out.txt
+
+# Logs
+*.log
+logs/
+log/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+!**/.env.example
+*.pem
+*.key
+token.txt
+
+# Databases / app runtime state
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+sqlite/
+db/
+database/*.db
+database/*.sqlite
+database/*.sqlite3
+uploads/
+backend/uploads/
+
+# Temp / local backup artifacts
+*.bak
 
 # Celery
 celerybeat-schedule
-
-# Environment
-.env
-.env.local
-.env.production
