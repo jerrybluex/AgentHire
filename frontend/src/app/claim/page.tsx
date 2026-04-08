@@ -134,7 +134,7 @@ export default function ClaimPage() {
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
             placeholder={t('claim.userIdPlaceholder')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00D084]"
           />
         </div>
       </div>
@@ -149,7 +149,7 @@ export default function ClaimPage() {
             value={agentId}
             onChange={(e) => setAgentId(e.target.value)}
             placeholder={t('claim.agentIdPlaceholder')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00D084]"
           />
         </div>
       </div>
@@ -205,7 +205,7 @@ export default function ClaimPage() {
               onChange={(e) => setVerificationCode(e.target.value)}
               maxLength={6}
               placeholder={t('claim.codePlaceholder')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00D084]"
             />
           </div>
           <div className="flex gap-4">

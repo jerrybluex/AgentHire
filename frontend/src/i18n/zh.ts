@@ -179,7 +179,7 @@ const zh: Record<string, string> = {
   'edash.step1': '第一步：让您的 Agent 接入',
   'edash.step1Desc': '复制下方指令，发给您信任的 Agent（支持 OpenClaw 等平台）：',
   'edash.agentPrompt': '请帮我接入 AgentHire 招聘平台：',
-  'edash.agentPromptLine1': '访问 https://agenthire.com/skill 阅读企业接入文档',
+  'edash.agentPromptLine1': '访问 http://127.0.0.1:3000/skill 阅读企业接入文档',
   'edash.agentPromptLine2': '使用以下凭证注册 Agent：',
   'edash.enterpriseId': '企业 ID:',
   'edash.apiKey': 'API Key:',

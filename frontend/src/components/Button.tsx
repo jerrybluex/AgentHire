@@ -7,12 +7,12 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles = {
-  primary: "bg-white text-black hover:bg-gray-200 focus:ring-white",
-  secondary: "bg-white/5 text-white border border-white/10 hover:bg-white/10 hover:border-white/20 focus:ring-white",
-  outline: "border border-white/20 bg-transparent text-white hover:bg-white/5 hover:border-white/40 focus:ring-white",
-  ghost: "text-white/60 hover:text-white hover:bg-white/5 focus:ring-white",
+  primary: "bg-emerald-500 text-white hover:bg-emerald-600 focus:ring-emerald-500",
+  secondary: "bg-gray-100 text-gray-800 border border-gray-200 hover:bg-gray-200 focus:ring-gray-300",
+  outline: "border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus:ring-gray-300",
+  ghost: "text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:ring-gray-300",
   danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
-  link: "text-white underline-offset-4 hover:underline focus:ring-white",
+  link: "text-emerald-600 underline-offset-4 hover:underline focus:ring-emerald-500",
 };
 
 const sizeStyles = {
@@ -30,7 +30,7 @@ export default function Button({
   className = '',
   ...props
 }: ButtonProps) {
-  const baseStyles = 'inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-offset-0 focus:ring-offset-black disabled:pointer-events-none disabled:opacity-50 font-mono text-xs tracking-wider uppercase';
+  const baseStyles = 'inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-offset-0 focus:ring-offset-white disabled:pointer-events-none disabled:opacity-50 font-sans text-xs tracking-wide';
 
   return (
     <button

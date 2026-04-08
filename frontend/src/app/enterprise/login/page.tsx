@@ -84,11 +84,11 @@ export default function EnterpriseLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-xl shadow-blue-500/30 mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#00D084] to-[#00b86f] rounded-2xl shadow-xl shadow-[#00D084]/30 mb-4">
             <span className="text-white font-bold text-2xl">A</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">{t('login.title')}</h1>
@@ -106,7 +106,7 @@ export default function EnterpriseLoginPage() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.email ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
+                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all ${errors.email ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
                 placeholder={t('login.emailPlaceholder')}
               />
               {errors.email && (
@@ -123,7 +123,7 @@ export default function EnterpriseLoginPage() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.password ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
+                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all ${errors.password ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
                 placeholder={t('login.passwordPlaceholder')}
               />
               {errors.password && (
@@ -137,7 +137,7 @@ export default function EnterpriseLoginPage() {
               </div>
             )}
 
-            <Button type="submit" size="lg" className="w-full shadow-lg shadow-blue-500/30" disabled={isSubmitting}>
+            <Button type="submit" size="lg" className="w-full shadow-lg shadow-[#00D084]/30" disabled={isSubmitting}>
               {isSubmitting ? t('login.loggingIn') : t('login.submit')}
             </Button>
           </form>
@@ -148,7 +148,7 @@ export default function EnterpriseLoginPage() {
             </span>
             <a
               href="/enterprise/register"
-              className="text-sm text-blue-600 hover:underline"
+              className="text-sm text-[#00D084] hover:underline"
             >
               {t('login.registerNow')}
             </a>

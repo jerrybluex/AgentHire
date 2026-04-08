@@ -27,6 +27,7 @@ async def export_profile_json(
     profile_id: str,
     include_resume: bool = Query(True, description="Include resume data"),
     db: AsyncSession = Depends(get_db),
+    agent_id: str = Depends(verify_agent_signature),
 ):
     """
     Export profile data as JSON.
@@ -70,6 +71,7 @@ async def export_profile_json(
 async def export_profile_pdf(
     profile_id: str,
     db: AsyncSession = Depends(get_db),
+    agent_id: str = Depends(verify_agent_signature),
 ):
     """
     Export profile data as PDF.
@@ -108,6 +110,7 @@ async def export_profile_pdf(
 async def export_resume_json(
     resume_id: str,
     db: AsyncSession = Depends(get_db),
+    agent_id: str = Depends(verify_agent_signature),
 ):
     """
     Export resume data as JSON.
@@ -149,6 +152,7 @@ async def export_resume_json(
 async def export_resume_pdf(
     resume_id: str,
     db: AsyncSession = Depends(get_db),
+    agent_id: str = Depends(verify_agent_signature),
 ):
     """
     Export resume data as PDF.
@@ -187,6 +191,7 @@ async def get_export_history(
     profile_id: str,
     limit: int = Query(10, ge=1, le=100, description="Maximum number of history records"),
     db: AsyncSession = Depends(get_db),
+    agent_id: str = Depends(verify_agent_signature),
 ):
     """
     Get profile export history.

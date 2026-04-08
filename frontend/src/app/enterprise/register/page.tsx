@@ -168,9 +168,9 @@ export default function EnterpriseRegisterPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center animate-fade-in-up">
-          <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-500/30">
+          <div className="w-20 h-20 bg-gradient-to-br from-[#00D084] to-[#00b86f] rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-[#00D084]/30">
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
             </svg>
@@ -182,8 +182,8 @@ export default function EnterpriseRegisterPage() {
           <p className="text-sm text-gray-500 mb-6">
             {t('register.reviewSentTo')}{formData.contact_email}
           </p>
-          <div className="bg-blue-50 rounded-xl p-4 mb-6 text-left">
-            <p className="text-sm text-blue-800">
+          <div className="bg-green-50 rounded-xl p-4 mb-6 text-left">
+            <p className="text-sm text-green-800">
               <strong>{t('register.friendlyReminder')}</strong>
               <ul className="list-disc list-inside mt-2 space-y-1 text-xs">
                 <li>{t('register.reviewTime')}</li>
@@ -200,7 +200,7 @@ export default function EnterpriseRegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 md:py-12 px-4">
+    <div className="min-h-screen bg-[#FAF8F5] py-8 md:py-12 px-4">
       <div className="max-w-3xl mx-auto">
         {/* 简洁标题 */}
         <div className="text-center mb-8">
@@ -213,7 +213,7 @@ export default function EnterpriseRegisterPage() {
             {/* 企业基本信息 */}
             <div className="border-b border-gray-100 pb-8">
               <h3 className="font-semibold text-gray-900 mb-6 flex items-center gap-3">
-                <span className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/30">1</span>
+                <span className="w-8 h-8 bg-gradient-to-br from-[#00D084] to-[#00b86f] text-white rounded-lg flex items-center justify-center text-sm font-bold shadow-lg shadow-[#00D084]/30">1</span>
                 {t('register.basicInfo')}
               </h3>
               <div className="grid sm:grid-cols-2 gap-5">
@@ -224,7 +224,7 @@ export default function EnterpriseRegisterPage() {
                     name="company_name"
                     value={formData.company_name}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.company_name ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
+                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all ${errors.company_name ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
                     placeholder={t('register.namePlaceholder')}
                   />
                   {errors.company_name && <p className="text-red-500 text-xs mt-1">{errors.company_name}</p>}
@@ -237,7 +237,7 @@ export default function EnterpriseRegisterPage() {
                     value={formData.unified_social_credit_code}
                     onChange={handleChange}
                     maxLength={18}
-                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.unified_social_credit_code ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
+                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all ${errors.unified_social_credit_code ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
                     placeholder={t('register.creditCodePlaceholder')}
                   />
                   {errors.unified_social_credit_code && <p className="text-red-500 text-xs mt-1">{errors.unified_social_credit_code}</p>}
@@ -248,7 +248,7 @@ export default function EnterpriseRegisterPage() {
             {/* 联系人信息 */}
             <div className="border-b border-gray-100 pb-8">
               <h3 className="font-semibold text-gray-900 mb-6 flex items-center gap-3">
-                <span className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/30">2</span>
+                <span className="w-8 h-8 bg-gradient-to-br from-[#00D084] to-[#00b86f] text-white rounded-lg flex items-center justify-center text-sm font-bold shadow-lg shadow-[#00D084]/30">2</span>
                 {t('register.contactSection')}
               </h3>
               <div className="grid sm:grid-cols-2 gap-5">
@@ -259,7 +259,7 @@ export default function EnterpriseRegisterPage() {
                     name="contact_name"
                     value={formData.contact_name}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.contact_name ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
+                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all ${errors.contact_name ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
                     placeholder={t('register.enterContactName')}
                   />
                   {errors.contact_name && <p className="text-red-500 text-xs mt-1">{errors.contact_name}</p>}
@@ -271,7 +271,7 @@ export default function EnterpriseRegisterPage() {
                     name="contact_phone"
                     value={formData.contact_phone}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.contact_phone ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
+                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all ${errors.contact_phone ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
                     placeholder={t('register.enterContactPhone')}
                   />
                   {errors.contact_phone && <p className="text-red-500 text-xs mt-1">{errors.contact_phone}</p>}
@@ -283,7 +283,7 @@ export default function EnterpriseRegisterPage() {
                     name="contact_email"
                     value={formData.contact_email}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.contact_email ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
+                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all ${errors.contact_email ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
                     placeholder={t('register.contactEmailPlaceholder')}
                   />
                   {errors.contact_email && <p className="text-red-500 text-xs mt-1">{errors.contact_email}</p>}
@@ -294,7 +294,7 @@ export default function EnterpriseRegisterPage() {
             {/* 资质文件上传 */}
             <div>
               <h3 className="font-semibold text-gray-900 mb-6 flex items-center gap-3">
-                <span className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/30">3</span>
+                <span className="w-8 h-8 bg-gradient-to-br from-[#00D084] to-[#00b86f] text-white rounded-lg flex items-center justify-center text-sm font-bold shadow-lg shadow-[#00D084]/30">3</span>
                 {t('register.fileUploadSection')}
               </h3>
               <p className="text-xs md:text-sm text-gray-500 mb-5">{t('register.fileUploadHint')}</p>
@@ -307,7 +307,7 @@ export default function EnterpriseRegisterPage() {
                     className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200 ${
                       files.business_license
                         ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-blue-400 hover:bg-blue-50'
+                        : 'border-gray-200 hover:border-[#00D084] hover:bg-green-50'
                     }`}
                     onClick={() => businessLicenseRef.current?.click()}
                   >
@@ -350,7 +350,7 @@ export default function EnterpriseRegisterPage() {
                     className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200 ${
                       files.legal_person_id
                         ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-blue-400 hover:bg-blue-50'
+                        : 'border-gray-200 hover:border-[#00D084] hover:bg-green-50'
                     }`}
                     onClick={() => legalPersonIdRef.current?.click()}
                   >
@@ -391,7 +391,7 @@ export default function EnterpriseRegisterPage() {
             {/* 账户信息 */}
             <div className="border-t border-gray-100 pt-8">
               <h3 className="font-semibold text-gray-900 mb-6 flex items-center gap-3">
-                <span className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/30">4</span>
+                <span className="w-8 h-8 bg-gradient-to-br from-[#00D084] to-[#00b86f] text-white rounded-lg flex items-center justify-center text-sm font-bold shadow-lg shadow-[#00D084]/30">4</span>
                 {t('register.accountSection')}
               </h3>
               <div className="grid sm:grid-cols-2 gap-5">
@@ -402,7 +402,7 @@ export default function EnterpriseRegisterPage() {
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.password ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
+                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all ${errors.password ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
                     placeholder={t('register.passwordHint')}
                   />
                   {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
@@ -414,7 +414,7 @@ export default function EnterpriseRegisterPage() {
                     name="confirm_password"
                     value={formData.confirm_password}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.confirm_password ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
+                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00D084] focus:border-transparent transition-all ${errors.confirm_password ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}
                     placeholder={t('register.confirmPasswordPlaceholder')}
                   />
                   {errors.confirm_password && <p className="text-red-500 text-xs mt-1">{errors.confirm_password}</p>}
@@ -459,7 +459,7 @@ export default function EnterpriseRegisterPage() {
                 type="submit"
                 size="lg"
                 disabled={isSubmitting || uploading}
-                className="flex-1 shadow-lg shadow-blue-500/30"
+                className="flex-1 shadow-lg shadow-[#00D084]/30"
               >
                 {isSubmitting ? t('register.submitting') : t('register.submit')}
               </Button>
@@ -467,7 +467,7 @@ export default function EnterpriseRegisterPage() {
           </form>
 
           <p className="text-center text-xs text-gray-400 mt-8">
-            {t('register.agreementPrefix')} <span className="text-blue-600">{t('register.agreement')}</span> {t('register.agreementAnd')} <span className="text-blue-600">{t('register.privacyPolicy')}</span>
+            {t('register.agreementPrefix')} <span className="text-[#00D084]">{t('register.agreement')}</span> {t('register.agreementAnd')} <span className="text-[#00D084]">{t('register.privacyPolicy')}</span>
           </p>
         </div>
       </div>

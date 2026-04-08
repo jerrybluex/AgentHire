@@ -240,3 +240,44 @@ async def get_current_employer(
         "enterprise_id": enterprise.id,
         "principal_id": enterprise.tenant_id,  # tenant_id as principal linkage
     }
+
+
+async def require_user_id_header(
+    x_user_id: str = Header(..., alias="X-User-ID", description="User ID"),
+) -> str:
+    """Temporary guard for user-scoped endpoints until real user auth lands."""
+    user_id = x_user_id.strip()
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User authentication required",
+        )
+    return user_id
+
+
+async def require_enterprise_api_key(
+    x_api_key: str = Header(..., alias="X-API-Key", description="Enterprise API key"),
+    x_enterprise_id: Optional[str] = Header(None, alias="X-Enterprise-ID"),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Validate enterprise API key and optionally bind it to the claimed enterprise."""
+    from app.services.enterprise_service import enterprise_service
+
+    result = await enterprise_service.validate_api_key(db, x_api_key)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid API key",
+        )
+
+    enterprise_id, api_key_id = result
+    if x_enterprise_id and x_enterprise_id != enterprise_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="API key does not belong to the specified enterprise",
+        )
+
+    return {
+        "enterprise_id": enterprise_id,
+        "api_key_id": api_key_id,
+    }

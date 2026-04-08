@@ -11,7 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models import Application, Job
+from app.models import Application, JobPosting
 from app.services.application_service import (
     application_service,
     ApplicationServiceError,

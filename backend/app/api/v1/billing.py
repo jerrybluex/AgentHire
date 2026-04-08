@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.services.enterprise_service import enterprise_service
+from app.api.deps import require_enterprise_api_key
 
 router = APIRouter()
 
@@ -42,18 +43,19 @@ class UsageStatsResponse(BaseModel):
 
 
 async def get_enterprise_from_header(
-    x_enterprise_id: str = Header(..., alias="X-Enterprise-ID"),
+    auth_context: dict = Depends(require_enterprise_api_key),
     db: AsyncSession = Depends(get_db),
 ) -> str:
-    """Get enterprise ID from header and validate."""
-    enterprise = await enterprise_service.get_enterprise(db, x_enterprise_id)
+    """Get enterprise ID from validated API key context."""
+    enterprise_id = auth_context["enterprise_id"]
+    enterprise = await enterprise_service.get_enterprise(db, enterprise_id)
     if not enterprise:
         from fastapi import HTTPException, status
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Enterprise not found",
         )
-    return x_enterprise_id
+    return enterprise_id
 
 
 @router.get(

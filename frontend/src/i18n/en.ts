@@ -179,7 +179,7 @@ const en: Record<string, string> = {
   'edash.step1': 'Step 1: Connect your Agent',
   'edash.step1Desc': 'Copy the instructions below, send to your trusted Agent (supports OpenClaw etc.):',
   'edash.agentPrompt': 'Please help me connect to the AgentHire recruitment platform:',
-  'edash.agentPromptLine1': 'Visit https://agenthire.com/skill to read enterprise integration docs',
+  'edash.agentPromptLine1': 'Visit http://127.0.0.1:3000/skill to read enterprise integration docs',
   'edash.agentPromptLine2': 'Register Agent with the following credentials:',
   'edash.enterpriseId': 'Enterprise ID:',
   'edash.apiKey': 'API Key:',

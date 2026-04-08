@@ -14,6 +14,20 @@ interface PendingEnterprise {
   created_at: string;
 }
 
+// 带超时的fetch函数
+const fetchWithTimeout = async <T,>(
+  promise: Promise<T>,
+  timeout = 5000,
+  name = 'API'
+): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`${name} 请求超时`)), timeout)
+    ),
+  ]);
+};
+
 export default function DashboardPage() {
   const { t } = useLang();
   const [stats, setStats] = useState({
@@ -25,56 +39,102 @@ export default function DashboardPage() {
   });
   const [pendingList, setPendingList] = useState<PendingEnterprise[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingStatus, setLoadingStatus] = useState<string>('正在连接服务器...');
   const [error, setError] = useState<string | null>(null);
   const [apiStatus, setApiStatus] = useState<'connected' | 'disconnected'>('disconnected');
+  const [apiErrors, setApiErrors] = useState<string[]>([]);
 
   useEffect(() => {
     async function fetchStats() {
-      try {
-        // Check API health
-        const health = await api.health();
-        setApiStatus('connected');
-      } catch (err) {
-        setApiStatus('disconnected');
-      }
-
-      // Fetch data separately to avoid one failure breaking all
-      try {
-        const profilesRes = await api.profiles.list({ page_size: 1 });
-        setStats(prev => ({ ...prev, totalProfiles: profilesRes.total || 0 }));
-      } catch (err) {
-        console.error('Failed to fetch profiles:', err);
-      }
+      const errors: string[] = [];
 
       try {
-        const jobsRes = await api.jobs.list({ page_size: 1 });
-        setStats(prev => ({ ...prev, totalJobs: jobsRes.total || 0 }));
-      } catch (err) {
-        console.error('Failed to fetch jobs:', err);
-      }
+        // Step 1: 检查API健康（3秒超时）
+        setLoadingStatus('正在检查API服务...');
+        try {
+          await fetchWithTimeout(api.health(), 3000, 'Health Check');
+          setApiStatus('connected');
+        } catch (err) {
+          console.warn('Health check failed:', err);
+          setApiStatus('disconnected');
+          errors.push('API服务连接失败');
+        }
 
-      try {
-        const enterprisesRes = await api.enterprises.list();
-        const enterprises = enterprisesRes.data || [];
-        const pendingCount = enterprises.filter((e: any) => e.status === 'pending').length;
-        setStats(prev => ({
-          ...prev,
-          totalEnterprises: enterprises.length,
-          pendingEnterprises: pendingCount,
-        }));
-        setPendingList(enterprises.filter((e: any) => e.status === 'pending').slice(0, 5));
-      } catch (err) {
-        console.error('Failed to fetch enterprises:', err);
-      }
+        // Step 2: 并行发起所有数据请求（5秒超时）
+        setLoadingStatus('正在加载统计数据...');
 
-      setLoading(false);
+        const [profilesResult, jobsResult, enterprisesResult] = await Promise.allSettled([
+          fetchWithTimeout(
+            api.profiles.list({ page_size: 1 }),
+            5000,
+            'Profiles'
+          ).catch(err => {
+            console.error('Profiles API error:', err);
+            errors.push('求职者数据加载失败');
+            return { total: 0 };
+          }),
+
+          fetchWithTimeout(
+            api.jobs.list({ page_size: 1 }),
+            5000,
+            'Jobs'
+          ).catch(err => {
+            console.error('Jobs API error:', err);
+            errors.push('职位数据加载失败');
+            return { total: 0 };
+          }),
+
+          fetchWithTimeout(
+            api.enterprises.list(),
+            5000,
+            'Enterprises'
+          ).catch(err => {
+            console.error('Enterprises API error:', err);
+            errors.push('企业数据加载失败');
+            return { data: [], total: 0 };
+          }),
+        ]);
+
+        // 处理结果
+        if (profilesResult.status === 'fulfilled') {
+          setStats(prev => ({ ...prev, totalProfiles: profilesResult.value.total || 0 }));
+        }
+
+        if (jobsResult.status === 'fulfilled') {
+          setStats(prev => ({ ...prev, totalJobs: jobsResult.value.total || 0 }));
+        }
+
+        if (enterprisesResult.status === 'fulfilled') {
+          const enterprises = enterprisesResult.value.data || [];
+          const pendingCount = enterprises.filter((e: any) => e.status === 'pending').length;
+          setStats(prev => ({
+            ...prev,
+            totalEnterprises: enterprises.length,
+            pendingEnterprises: pendingCount,
+          }));
+          setPendingList(enterprises.filter((e: any) => e.status === 'pending').slice(0, 5));
+        }
+
+        // 记录所有错误
+        if (errors.length > 0) {
+          setApiErrors(errors);
+          setError(`部分数据加载失败: ${errors.join(', ')}`);
+        }
+
+      } catch (err) {
+        console.error('Dashboard fetch error:', err);
+        setError('数据加载失败，请检查网络连接或刷新页面重试');
+      } finally {
+        setLoading(false);
+        setLoadingStatus('');
+      }
     }
+
     fetchStats();
   }, []);
 
   const handleApprove = async (enterpriseId: string) => {
     try {
-      // 调用审核通过 API
       const response = await fetch(`/api/v1/enterprise/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -86,7 +146,6 @@ export default function DashboardPage() {
       const result = await response.json();
       if (result.success) {
         alert(t('dashboard.reviewPassed'));
-        // 刷新列表
         window.location.reload();
       } else {
         alert(t('dashboard.operationFailed') + result.message);
@@ -119,15 +178,23 @@ export default function DashboardPage() {
     }
   };
 
+  // 重新加载数据
+  const handleRetry = () => {
+    window.location.reload();
+  };
+
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
-        <div className="text-gray-500">{t('common.loading')}</div>
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-4"></div>
+        <div className="text-gray-600 font-medium">{t('common.loading')}</div>
+        <div className="text-gray-400 text-sm mt-2">{loadingStatus}</div>
+        <div className="text-gray-400 text-xs mt-4">如果长时间无响应，请检查网络连接</div>
       </div>
     );
   }
 
+  // 如果有错误，显示错误提示但不阻止内容显示
   const statCards = [
     { title: t('dashboard.totalJobSeekers'), value: stats.totalProfiles, icon: '👤', color: 'bg-blue-500' },
     { title: t('dashboard.totalJobs'), value: stats.totalJobs, icon: '💼', color: 'bg-green-500' },
@@ -138,6 +205,37 @@ export default function DashboardPage() {
   return (
     <div>
       <Header title={t('dashboard.adminDashboard')} description={t('dashboard.welcomeAdmin')} />
+
+      {/* 错误提示 */}
+      {error && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <div className="flex items-start">
+            <div className="text-yellow-600 mr-3">⚠️</div>
+            <div className="flex-1">
+              <div className="text-yellow-800 font-medium">{error}</div>
+              <div className="text-yellow-600 text-sm mt-1">
+                您可以继续查看已加载的数据，或点击刷新重试
+              </div>
+              <button
+                onClick={handleRetry}
+                className="mt-2 px-3 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 text-sm"
+              >
+                刷新页面
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* API状态指示器 */}
+      <div className="flex items-center gap-4 mb-6 text-sm">
+        <div className="flex items-center">
+          <div className={`w-2 h-2 rounded-full mr-2 ${apiStatus === 'connected' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+          <span className="text-gray-600">
+            API: {apiStatus === 'connected' ? '已连接' : '未连接'}
+          </span>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {statCards.map((card) => (
@@ -160,7 +258,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-gray-900">{t('dashboard.pendingEnterprises')}</h2>
-            <a href="/dashboard/enterprises" className="text-sm text-blue-600 hover:underline">
+            <a href="/enterprise" className="text-sm text-blue-600 hover:underline">
               {t('dashboard.viewAll')}
             </a>
           </div>
@@ -220,7 +318,7 @@ export default function DashboardPage() {
               <span className="font-medium text-blue-600">{t('dashboard.manageJobs')}</span>
               <p className="text-sm text-gray-500 mt-1">{t('dashboard.manageJobsDesc')}</p>
             </a>
-            <a href="/dashboard/enterprises" className="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            <a href="/enterprise" className="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
               <span className="font-medium text-blue-600">{t('dashboard.manageEnterprises')}</span>
               <p className="text-sm text-gray-500 mt-1">{t('dashboard.manageEnterprisesDesc')}</p>
             </a>

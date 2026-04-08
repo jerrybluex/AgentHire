@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.cache import get_cache, CacheManager
-from app.models import Job
+from app.models import JobPosting
 from app.services.job_service import job_service
 from app.services.enterprise_service import enterprise_service
 from app.services.discovery_service import discovery_service
@@ -330,7 +330,7 @@ async def update_job(
     enterprise_id, api_key_id = api_key_info
     # 验证企业所有权
     result = await db.execute(
-        select(Job).where(Job.id == job_id)
+        select(JobPosting).where(Job.id == job_id)
     )
     job = result.scalar_one_or_none()
     if not job:
@@ -384,7 +384,7 @@ async def delete_job(
     enterprise_id, api_key_id = api_key_info
     # 验证企业所有权
     result = await db.execute(
-        select(Job).where(Job.id == job_id)
+        select(JobPosting).where(Job.id == job_id)
     )
     job = result.scalar_one_or_none()
     if not job:
