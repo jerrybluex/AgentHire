@@ -6,7 +6,7 @@ Agent Service
 import hashlib
 import hmac
 import secrets
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from sqlalchemy import select
@@ -111,7 +111,7 @@ class AgentService:
             agent_id if valid, None otherwise
         """
         # Check timestamp (within MAX_TIMESTAMP_DRIFT)
-        current_time = int(datetime.utcnow().timestamp())
+        current_time = int(datetime.now(timezone.utc).timestamp())
         if abs(current_time - timestamp) > MAX_TIMESTAMP_DRIFT:
             return None
 
