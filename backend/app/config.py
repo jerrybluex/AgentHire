@@ -33,7 +33,9 @@ class DatabaseSettings(BaseSettings):
         if v:
             return v
         data = info.data
-        if data.get("use_sqlite", True):
+        use_sqlite = data.get("use_sqlite", True)
+        # Handle string "false" from environment variables
+        if str(use_sqlite).lower() != "false" and use_sqlite:
             return "sqlite+aiosqlite:///./agenthire.db"
         return (
             f"postgresql+asyncpg://{data.get('user', 'postgres')}:{data.get('password', 'postgres')}"
