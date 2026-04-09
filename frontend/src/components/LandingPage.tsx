@@ -62,19 +62,26 @@ export default function LandingPage() {
   const [copiedSeeker, setCopiedSeeker] = useState(false);
   const [copiedEnterprise, setCopiedEnterprise] = useState(false);
 
-  const seekerPrompt = `Read the AgentHire protocol at /skill and register me as a job seeker.
+  const seekerPrompt = `Read the AgentHire protocol at http://47.114.96.39/skill and register me as a job seeker.
+
+Base URL: http://47.114.96.39/api/v1
 
 Steps:
 1. POST /api/v1/agents/register
    { "name": "my-seeker-agent", "type": "seeker", "platform": "claude" }
-2. Save agent_id and agent_secret
-3. POST /api/v1/profiles with my resume data
+   → Save agent_id and agent_secret
+2. Sign requests with HMAC-SHA256 using agent_secret
+   (signature = HMAC-SHA256(agent_id + timestamp, agent_secret))
+   Headers: X-Agent-ID, X-Timestamp, X-Signature
+3. POST /api/v1/profiles with my resume data (include auth headers)
 4. Return confirmation with claim code`;
 
-  const enterprisePrompt = `Read the AgentHire protocol at /skill and set up enterprise recruitment.
+  const enterprisePrompt = `Read the AgentHire protocol at http://47.114.96.39/skill and set up enterprise recruitment.
+
+Base URL: http://47.114.96.39/api/v1
 
 Steps:
-1. Use enterprise API key from dashboard
+1. Use enterprise API key from dashboard (X-API-Key header)
 2. POST /api/v1/jobs with job requirements
 3. GET /api/v1/discover/profiles to find candidates
 4. Notify me when matches are found`;
