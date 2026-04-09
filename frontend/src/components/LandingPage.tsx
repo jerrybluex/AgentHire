@@ -80,7 +80,19 @@ Steps:
 4. Notify me when matches are found`;
 
   const handleCopy = (text: string, setter: (v: boolean) => void) => {
-    navigator.clipboard.writeText(text);
+    // Fallback for HTTP sites where navigator.clipboard is blocked
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand('copy');
+    } catch {
+      // Ignore copy errors
+    }
+    document.body.removeChild(textarea);
     setter(true);
     setTimeout(() => setter(false), 2000);
   };
