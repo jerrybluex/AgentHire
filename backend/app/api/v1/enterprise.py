@@ -12,12 +12,12 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.exceptions import ValidationException, NotFoundException, ConflictException, QuotaExceededException
+from app.core.exceptions import ValidationException, NotFoundException, ConflictException, QuotaExceededException, AuthenticationException
 from app.models import Enterprise, EnterpriseAPIKey, EnterpriseVerificationCase, generate_id
 from app.services.enterprise_service import enterprise_service, verify_password, hash_password
 from app.services.identity_service import identity_service
 from app.services.enterprise_verification_service import enterprise_verification_service
-from app.api.deps import get_current_user, CurrentUser, get_current_admin
+from app.api.deps import get_current_user, CurrentUser, get_current_admin, require_enterprise_api_key
 
 router = APIRouter()
 
@@ -245,8 +245,8 @@ async def apply_enterprise(
 )
 async def create_api_key(
     request: ApiKeyCreateRequest,
+    api_key: dict = Depends(require_enterprise_api_key),
     db: AsyncSession = Depends(get_db),
-    enterprise_id: str = Header(..., alias="X-Enterprise-ID"),
 ) -> EnterpriseResponse:
     """Create a new API key for an approved enterprise."""
     result = await enterprise_service.create_api_key(
@@ -282,7 +282,7 @@ async def create_api_key(
     description="Get enterprise billing information",
 )
 async def get_billing(
-    enterprise_id: str = Header(..., alias="X-Enterprise-ID"),
+    api_key: dict = Depends(require_enterprise_api_key),
     start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
     limit: int = Query(100, ge=1, le=500, description="Number of records"),
@@ -738,6 +738,7 @@ async def reject_enterprise_verification(
 )
 async def get_current_enterprise(
     enterprise_id: str = Header(..., alias="X-Enterprise-ID"),
+    api_key: dict = Depends(require_enterprise_api_key),
     db: AsyncSession = Depends(get_db),
 ) -> EnterpriseResponse:
     """Get enterprise info."""
