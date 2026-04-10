@@ -9,6 +9,7 @@ from fastapi import APIRouter, File, Form, UploadFile, status
 from pydantic import BaseModel, Field
 
 from app.services.resume_parser import parse_resume
+from app.services.resume_analyzer import analyze_resume
 from app.services.intent_parser import parse_seeker_intent, parse_employer_intent
 
 router = APIRouter()
@@ -92,7 +93,7 @@ async def parse_intent(request: ParseIntentRequest) -> ParseIntentResponse:
     response_model=ParseResumeResponse,
     status_code=status.HTTP_200_OK,
     summary="Parse resume file",
-    description="Parse PDF/Word resume into structured data",
+    description="Parse PDF/Word resume into structured data + quality analysis",
 )
 async def parse_resume_endpoint(
     resume_file: UploadFile = File(..., description="Resume file (PDF, DOCX, JPG, PNG)"),
@@ -162,10 +163,20 @@ async def parse_resume_endpoint(
         )
 
         if result.get("success"):
+            # Add resume analysis
+            extracted_data = result.get("extracted_data", {})
+            confidence = result.get("confidence", 0.0)
+            analysis = await analyze_resume(extracted_data, confidence)
+
+            # Combine results with analysis
+            result["analysis"] = analysis
+
             return ParseResumeResponse(
                 success=True,
                 data=result,
-                message="Resume parsed successfully",
+                message="简历解析完成！
+
+### 📊 简历质量分析",
             )
         else:
             return ParseResumeResponse(
