@@ -8,7 +8,7 @@ import hashlib
 from typing import Optional
 from datetime import datetime, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Enterprise, EnterpriseAPIKey, BillingRecord, generate_id
@@ -98,9 +98,11 @@ class EnterpriseService:
         db: AsyncSession,
         email: str,
     ) -> Optional[Enterprise]:
-        """Get an enterprise by contact email."""
+        """Get an enterprise by contact email (case-insensitive)."""
         result = await db.execute(
-            select(Enterprise).where(Enterprise.contact["email"].as_string() == email.lower())
+            select(Enterprise).where(
+                func.lower(Enterprise.contact["email"].as_string()) == email.lower()
+            )
         )
         return result.scalar_one_or_none()
 
