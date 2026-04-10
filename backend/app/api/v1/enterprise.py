@@ -232,7 +232,8 @@ async def apply_enterprise(
         logger = logging.getLogger(__name__)
         logger.error(f"Application failed: " + str(e), exc_info=True)
         raise HTTPException(
-            detail={"error": "INTERNAL_ERROR", "message": "Application failed: failed"}
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "INTERNAL_ERROR", "message": "Application failed: " + str(e)}
         )
 
 @router.post(
