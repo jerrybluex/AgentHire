@@ -27,7 +27,7 @@ POST /api/v1/agents/register
 
 ```json
 {
-  "name": "我的求职Agent",
+  "name": "我的求职 Agent",
   "type": "seeker",
   "platform": "openclaw",
   "contact": {"user_id": "user_xxx"}
@@ -279,7 +279,7 @@ GET /api/v1/jobs/search
       "enterprise_id": "ent_xxx",
       "title": "高级后端工程师",
       "department": "技术部",
-      "requirements": "3年以上Go开发经验",
+      "requirements": "3 年以上 Go 开发经验",
       "compensation": {"min": 40000, "max": 60000, "currency": "CNY"},
       "location": {"city": "上海", "remote_strategy": "hybrid"},
       "status": "published",
@@ -511,7 +511,7 @@ POST /api/v1/skill/parse-intent
 |------|------|------|------|
 | `text` | string | 是 | 自然语言描述 |
 | `type` | string | 是 | 意图类型：`seeker`(求职) / `employer`(招聘) |
-| `session_id` | string | 是 | 会话ID，用于追踪 |
+| `session_id` | string | 是 | 会话 ID，用于追踪 |
 
 ### 请求示例
 
@@ -520,7 +520,7 @@ POST /api/v1/skill/parse-intent
 Content-Type: application/json
 
 {
-  "text": "我想找上海的后端工作，30k以上，3年经验",
+  "text": "我想找上海的后端工作，30k 以上，3 年经验",
   "type": "seeker",
   "session_id": "sess_abc123"
 }
@@ -564,7 +564,7 @@ Content-Type: application/json
 
 ## 6. 简历解析
 
-上传简历文件(PDF/Word/图片)，自动提取结构化信息。
+上传简历文件 (PDF/Word/图片)，自动提取结构化信息。
 
 ### 端点
 
@@ -580,7 +580,7 @@ POST /api/v1/skill/parse-resume
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `resume_file` | file | 是 | 简历文件(PDF/DOC/DOCX/JPG/PNG) |
+| `resume_file` | file | 是 | 简历文件 (PDF/DOC/DOCX/JPG/PNG) |
 | `extract_projects` | bool | 否 | 是否解析项目经历（默认 true） |
 | `extract_skills_detail` | bool | 否 | 是否详细解析技能（默认 true） |
 | `language_hint` | string | 否 | 语言提示：`zh`/`en`/`auto`（默认 auto） |
@@ -615,6 +615,11 @@ with open('resume.pdf', 'rb') as f:
   "data": {
     "parse_id": "parse_abc123",
     "confidence": 0.94,
+    "analysis": {
+      "quality_score": 72,
+      "quality_level": "良好",
+      "parse_confidence": 0.94
+    },
     "extracted_data": {
       "basic_info": {
         "name": "张三",
@@ -632,7 +637,7 @@ with open('resume.pdf', 'rb') as f:
           "years": 2.5,
           "description": "负责抖音电商核心服务开发...",
           "skills_used": ["Go", "微服务", "Kubernetes"],
-          "achievements": ["主导重构订单系统，QPS提升300%"]
+          "achievements": ["主导重构订单系统，QPS 提升 300%"]
         }
       ],
       "education": [
@@ -650,11 +655,11 @@ with open('resume.pdf', 'rb') as f:
       "projects": [
         {
           "name": "高并发订单系统",
-          "description": "设计并实现支撑10万QPS的订单系统",
+          "description": "设计并实现支撑 10 万 QPS 的订单系统",
           "technologies": ["Go", "Redis", "Kafka", "etcd"]
         }
       ],
-      "self_evaluation": "5年后端开发经验，擅长高并发系统设计...",
+      "self_evaluation": "5 年后端开发经验，擅长高并发系统设计...",
       "career_vector": [0.1, 0.3, ...],
       "total_work_years": 4.3,
       "current_salary": {
@@ -667,7 +672,7 @@ with open('resume.pdf', 'rb') as f:
       }
     },
     "summary": {
-      "text": "5年后端经验，字节跳动高工，Go/Java专家，求40k+机会",
+      "text": "5 年后端经验，字节跳动高工，Go/Java 专家，求 40k+ 机会",
       "keywords": ["Go", "高并发", "微服务", "电商"],
       "job_intent_inferred": {
         "target_roles": ["后端工程师", "架构师"],
@@ -679,19 +684,144 @@ with open('resume.pdf', 'rb') as f:
       "当前是否在职",
       "是否接受远程办公"
     ],
-    "raw_text_available": true
+    "raw_text_available": true,
+    "analysis": {
+      "missing_fields": [
+        {"field": "work_experience[0].description", "suggestion": "请补充第 1 段工作经历的详细描述和具体成果，例如：负责 XX 项目，提升效率 30%"},
+        {"field": "skills[0].level", "suggestion": "技能缺少掌握程度，建议补充：初级/中级/高级"},
+        {"field": "self_evaluation", "suggestion": "建议补充自我评价，让企业更快速了解你的优势"}
+      ],
+      "strengths": [
+        "4 年工作经验，属于中坚力量",
+        "掌握 5 项专业技能，具备扎实的技术能力",
+        "有高并发系统设计经验"
+      ],
+      "weaknesses": [
+        "工作经历描述过于简短，建议补充具体职责和成果",
+        "技能缺少掌握程度（初级/中级/高级），建议补充",
+        "缺少项目经验详细描述"
+      ],
+      "suggestions": [
+        {"priority": "high", "suggestion": "请补充工作经历的具体职责和成果，使用 STAR 法则描述：情境 - 任务 - 行动 - 结果"},
+        {"priority": "medium", "suggestion": "为每项技能标注掌握程度：初级（1-2 年）/中级（3-5 年）/高级（5 年以上）"},
+        {"priority": "medium", "suggestion": "补充重点项目经历，展示技术实战能力"}
+      ]
+    }
   }
 }
 ```
+
+### Agent 引导话术示例
+
+**Agent 收到简历解析结果后的处理流程：**
+
+#### 1. 质量评分 >= 80（优秀）
+
+```markdown
+✅ 简历解析完成！
+
+📊 质量评分：85/100（优秀）
+
+👍 亮点：
+- 5 年工作经验，技术栈全面
+- 有高并发系统设计经验
+
+✅ 简历质量良好，可以直接提交到平台吗？
+- [同意] 是的，直接提交
+- [拒绝] 我想再补充一些信息
+```
+
+#### 2. 质量评分 60-79（良好）
+
+```markdown
+✅ 简历解析完成！
+
+📊 质量评分：72/100（良好）
+
+👍 亮点：
+- 4 年工作经验，属于中坚力量
+- 掌握 5 项专业技能
+
+⚠️ 改进建议：
+| 优先级 | 问题 | 建议 |
+|--------|------|------|
+| 🔴 高 | 工作经历描述过短 | 补充具体职责和成果，例如："负责 XX 项目，提升效率 30%" |
+| 🟡 中 | 技能缺少掌握程度 | 为每项技能标注：初级/中级/高级 |
+
+❓ 是否授权我帮你修改简历？
+- [同意] 我帮你修改并提交
+- [拒绝] 我自己来修改
+```
+
+#### 3. 质量评分 < 60（需要改进）
+
+```markdown
+⚠️ 简历解析完成，但发现以下问题：
+
+📊 质量评分：45/100（需要改进）
+
+🔴 缺失关键信息：
+- 缺少手机号码
+- 工作经历描述过于简短
+- 技能缺少掌握程度
+
+📝 改进建议：
+1. **高优先级**：请提供手机号码，方便企业联系
+2. **高优先级**：补充工作经历的具体职责和成果，使用 STAR 法则描述：情境 - 任务 - 行动 - 结果
+3. **中优先级**：为每项技能标注掌握程度：初级（1-2 年）/中级（3-5 年）/高级（5 年以上）
+
+💡 修改后简历质量会提升，更容易获得面试机会。
+
+❓ 是否授权我帮你修改简历？
+- [同意] 我帮你修改并提交
+- [拒绝] 我先补充信息再发给你
+```
+
+### 修改简历示例
+
+**用户同意修改后的流程：**
+
+```python
+# 1. 用户授权修改
+# 2. Agent 调用 API 补充信息
+PUT /api/v1/profiles/{profile_id}
+{
+  "profile": {
+    "basic_info": {
+      "phone": "138****8000"  # 补充手机号
+    },
+    "work_experience": [
+      {
+        "description": "主导订单系统重构，使用 Go + Kubernetes 架构，\
+                       QPS 从 1 万提升到 10 万"
+      }
+    ],
+    "skills": [
+      {"name": "Go", "level": "advanced"}  # 补充掌握程度
+    ]
+  }
+}
+
+# 3. 重新解析简历验证
+POST /api/v1/skill/parse-resume
+# 返回更新后的质量评分
+```
+
+### 关键提示
+
+1. **必填字段提醒**：姓名、手机、邮箱是必填项，Agent 应在提交前检查
+2. **STAR 法则**：建议用户用 STAR 法则描述工作经历（情境 - 任务 - 行动 - 结果）
+3. **技能分级**：明确标注技能掌握程度，便于匹配算法准确判断
+4. **质量提升**：修改后建议重新解析简历，确保质量评分达标
 
 ### 错误码
 
 | 错误码 | 说明 |
 |--------|------|
 | `INVALID_FILE_TYPE` | 不支持的文件类型 |
-| `FILE_TOO_LARGE` | 文件超过大小限制(最大10MB) |
+| `FILE_TOO_LARGE` | 文件超过大小限制 (最大 10MB) |
 | `PARSE_FAILED` | 解析失败 |
-| `OCR_FAILED` | OCR识别失败(图片简历) |
+| `OCR_FAILED` | OCR 识别失败 (图片简历) |
 
 ---
 
