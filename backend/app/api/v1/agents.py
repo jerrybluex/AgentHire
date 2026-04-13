@@ -60,6 +60,17 @@ class AgentInfoResponse(BaseModel):
     message: Optional[str] = None
 
 
+class AgentListResponse(BaseModel):
+    """Agent list response."""
+
+    success: bool = True
+    data: Optional[list] = None
+    total: int = 0
+    page: int = 1
+    page_size: int = 20
+    message: Optional[str] = None
+
+
 # =============================================================================
 # Endpoints
 # =============================================================================
@@ -187,3 +198,45 @@ async def get_agent_info(
                 data=None,
                 message="Agent not found",
             )
+
+
+@router.get(
+    "",
+    response_model=AgentListResponse,
+    status_code=status.HTTP_200_OK,
+    summary="List agents",
+    description="List all registered agents with optional filters",
+)
+async def list_agents(
+    type: Optional[str] = None,
+    status: Optional[str] = "active",
+    page: int = 1,
+    page_size: int = 20,
+) -> AgentListResponse:
+    """
+    List agents with optional filters.
+
+    - **type**: Filter by 'seeker' or 'employer'
+    - **status**: Filter by status (default: 'active')
+    - **page**: Page number (1-indexed)
+    - **page_size**: Number of items per page
+    """
+    from app.core.database import get_db_context
+
+    async with get_db_context() as db:
+        result = await agent_service.list_agents(
+            db=db,
+            agent_type=type,
+            status=status,
+            page=page,
+            page_size=page_size,
+        )
+
+        return AgentListResponse(
+            success=True,
+            data=result["agents"],
+            total=result["total"],
+            page=result["page"],
+            page_size=result["page_size"],
+            message="Agents retrieved",
+        )

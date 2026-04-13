@@ -173,6 +173,67 @@ class AgentService:
             "created_at": agent.created_at.isoformat(),
         }
 
+    async def list_agents(
+        self,
+        db: AsyncSession,
+        agent_type: Optional[str] = None,
+        status: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 20,
+    ) -> dict:
+        """
+        List agents with optional filters.
+
+        Args:
+            db: Database session
+            agent_type: Filter by 'seeker' or 'employer'
+            status: Filter by status (default: 'active')
+            page: Page number (1-indexed)
+            page_size: Number of items per page
+
+        Returns:
+            dict with agents list and total count
+        """
+        query = select(Agent)
+
+        if agent_type:
+            query = query.where(Agent.type == agent_type)
+
+        if status:
+            query = query.where(Agent.status == status)
+        else:
+            query = query.where(Agent.status == "active")
+
+        # Count total
+        from sqlalchemy import func
+        count_result = await db.execute(select(func.count()).select_from(query.subquery()))
+        total = count_result.scalar() or 0
+
+        # Pagination
+        offset = (page - 1) * page_size
+        query = query.offset(offset).limit(page_size).order_by(Agent.created_at.desc())
+
+        result = await db.execute(query)
+        agents = result.scalars().all()
+
+        return {
+            "agents": [
+                {
+                    "id": agent.id,
+                    "name": agent.name,
+                    "type": agent.type,
+                    "platform": agent.platform,
+                    "contact": agent.contact,
+                    "status": agent.status,
+                    "created_at": agent.created_at.isoformat(),
+                }
+                for agent in agents
+            ],
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+        }
+
 
 # Singleton instance
 agent_service = AgentService()
