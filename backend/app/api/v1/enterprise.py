@@ -278,7 +278,7 @@ async def create_api_key(
     """Create a new API key for an approved enterprise."""
     result = await enterprise_service.create_api_key(
         db=db,
-        enterprise_id=enterprise_id,
+        enterprise_id=api_key["enterprise_id"],
         name=request.name,
         plan=request.plan,
         rate_limit=request.rate_limit,
@@ -318,7 +318,7 @@ async def get_billing(
     """Get billing records for an enterprise."""
     records, total = await enterprise_service.get_billing_records(
         db=db,
-        enterprise_id=enterprise_id,
+        enterprise_id=api_key["enterprise_id"],
         start_date=start_date,
         end_date=end_date,
         limit=limit,

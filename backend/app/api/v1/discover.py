@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.cache import get_cache, CacheManager
-from app.services.discovery_service import discovery_service, job_to_dict, profile_to_dict
+from app.services.discovery_service import discovery_service
 from app.services.enterprise_service import enterprise_service
 
 logger = logging.getLogger(__name__)

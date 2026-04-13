@@ -389,7 +389,7 @@ async def complete_upload(
         )
 
     # Cleanup temp files and cache
-    await cancel_upload(upload_id, cache)
+    await _cleanup_upload(upload_id, cache)
 
     # Generate file ID
     file_id = f"file_{int(time.time())}_{file_hash[:16]}"
@@ -474,9 +474,9 @@ async def cancel_upload(
     return {"success": True, "message": "Upload cancelled"}
 
 
-# Export cancel for use in complete_upload
-async def cancel_upload(upload_id: str, cache: CacheManager):
-    """Internal cancel implementation."""
+# Internal cleanup helper for use in complete_upload
+async def _cleanup_upload(upload_id: str, cache: CacheManager):
+    """Internal cleanup implementation."""
     await cache.delete_upload_chunks(upload_id)
     await cache.delete_upload_metadata(upload_id)
 

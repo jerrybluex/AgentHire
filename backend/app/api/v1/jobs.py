@@ -330,7 +330,7 @@ async def update_job(
     enterprise_id, api_key_id = api_key_info
     # 验证企业所有权
     result = await db.execute(
-        select(JobPosting).where(Job.id == job_id)
+        select(JobPosting).where(JobPosting.id == job_id)
     )
     job = result.scalar_one_or_none()
     if not job:
@@ -384,7 +384,7 @@ async def delete_job(
     enterprise_id, api_key_id = api_key_info
     # 验证企业所有权
     result = await db.execute(
-        select(JobPosting).where(Job.id == job_id)
+        select(JobPosting).where(JobPosting.id == job_id)
     )
     job = result.scalar_one_or_none()
     if not job:
