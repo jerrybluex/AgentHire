@@ -8,7 +8,7 @@ import hmac
 import time
 import json
 
-BASE_URL = "http://127.0.0.1:8000"
+BASE_URL = "http://47.114.96.39/api/v1"
 
 def calc_signature(agent_secret: str, agent_id: str, timestamp: int) -> str:
     """计算 HMAC-SHA256 签名"""
@@ -23,7 +23,7 @@ def calc_signature(agent_secret: str, agent_id: str, timestamp: int) -> str:
 def main():
     # Step 1: 注册 Agent
     print("=== Step 1: Register Agent ===")
-    resp = httpx.post(f"{BASE_URL}/api/v1/agents/register", json={
+    resp = httpx.post(f"{BASE_URL}/agents/register", json={
         "name": "test-seeker-agent",
         "type": "seeker",
         "platform": "claude"
@@ -44,7 +44,7 @@ def main():
     timestamp = int(time.time())
     signature = calc_signature(agent_secret, agent_id, timestamp)
 
-    resp = httpx.post(f"{BASE_URL}/api/v1/agents/authenticate", json={
+    resp = httpx.post(f"{BASE_URL}/agents/authenticate", json={
         "agent_id": agent_id,
         "timestamp": timestamp,
         "signature": signature
@@ -64,7 +64,7 @@ def main():
     }
 
     resp = httpx.post(
-        f"{BASE_URL}/api/v1/profiles",
+        f"{BASE_URL}/profiles",
         headers=headers,
         json={
             "profile": {
@@ -81,12 +81,12 @@ def main():
 
     # Step 4: 发现职位
     print("\n=== Step 4: Discover Jobs ===")
-    resp = httpx.get(f"{BASE_URL}/api/v1/discover/jobs?location=北京")
+    resp = httpx.get(f"{BASE_URL}/discover/jobs")
     print(resp.json())
 
     # Step 5: 获取所有可用职位
     print("\n=== Step 5: List All Jobs ===")
-    resp = httpx.get(f"{BASE_URL}/api/v1/jobs")
+    resp = httpx.get(f"{BASE_URL}/jobs")
     print(resp.json())
 
 if __name__ == "__main__":

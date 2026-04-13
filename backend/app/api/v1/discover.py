@@ -13,7 +13,7 @@ Discovery API - Agent 自主发现
 """
 
 import logging
-from fastapi import APIRouter, Depends, Header, Query
+from fastapi import APIRouter, Depends, Header, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
