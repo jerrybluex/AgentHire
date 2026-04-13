@@ -174,9 +174,7 @@ async def parse_resume_endpoint(
             return ParseResumeResponse(
                 success=True,
                 data=result,
-                message="简历解析完成！
-
-### 📊 简历质量分析",
+                message="简历解析完成！\n\n### 📊 简历质量分析",
             )
         else:
             return ParseResumeResponse(
