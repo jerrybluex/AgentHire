@@ -273,9 +273,20 @@ async def confirm(
                     reference_id=session.id,
                 )
 
+    # Build response data - include contact info if exchanged
+    response_data = {
+        "session_id": result.get("session_id"),
+        "status": result.get("status"),
+        "contact_exchange": result.get("contact_exchange"),
+    }
+
+    # Include contact info if both parties confirmed
+    if result.get("contact"):
+        response_data["contact"] = result.get("contact")
+
     return A2AResponse(
         success=True,
-        data=result,
+        data=response_data,
         message=result.get("message"),
     )
 

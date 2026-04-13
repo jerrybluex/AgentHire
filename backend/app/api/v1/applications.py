@@ -17,6 +17,7 @@ from app.services.application_service import (
     ApplicationServiceError,
     ApplicationNotFoundError,
     InvalidTransitionError,
+    PermissionDeniedError,
 )
 from app.services.contact_unlock_service import contact_unlock_service
 from app.api.deps import verify_agent, get_current_employer, get_current_user
@@ -31,6 +32,14 @@ router = APIRouter()
 
 class ApplicationCreateResponse(BaseModel):
     """Application creation response."""
+
+    success: bool = True
+    data: dict = Field(default_factory=dict)
+    message: str | None = None
+
+
+class ApplicationDetailResponse(BaseModel):
+    """Application detail response."""
 
     success: bool = True
     data: dict = Field(default_factory=dict)
@@ -138,6 +147,58 @@ async def create_application(
         )
 
 
+@router.get(
+    "/{application_id}",
+    response_model=ApplicationDetailResponse,
+    status_code=status.HTTP_200_OK,
+    summary="获取申请详情",
+    description="根据 ID 获取申请详情（仅本人/本企业可查看）",
+)
+async def get_application(
+    application_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_agent: dict = Depends(verify_agent),
+) -> ApplicationDetailResponse:
+    """
+    获取申请详情。仅申请者本人或招聘企业可查看。
+
+    - **application_id**: 申请 ID
+    """
+    result = await db.execute(
+        select(Application).where(Application.id == application_id)
+    )
+    application = result.scalar_one_or_none()
+
+    if not application:
+        return ApplicationDetailResponse(
+            success=False,
+            data={},
+            message=f"Application not found: {application_id}",
+        )
+
+    # 验证权限：申请者的 PrincipalID 必须匹配
+    if application.applicant_principal_id != current_agent.get("principal_id"):
+        return ApplicationDetailResponse(
+            success=False,
+            data={},
+            message="Not authorized to view this application",
+        )
+
+    return ApplicationDetailResponse(
+        success=True,
+        data={
+            "application_id": application.id,
+            "profile_id": application.profile_id,
+            "job_id": application.job_id,
+            "status": application.status,
+            "cover_letter": application.cover_letter,
+            "created_at": application.created_at.isoformat(),
+            "updated_at": application.updated_at.isoformat() if application.updated_at else None,
+        },
+        message="Application retrieved",
+    )
+
+
 @router.post(
     "/{application_id}/submit",
     response_model=ApplicationSubmitResponse,
@@ -174,6 +235,13 @@ async def submit_application(
             message="Application submitted successfully",
         )
     except ApplicationNotFoundError as e:
+        await db.rollback()
+        return ApplicationSubmitResponse(
+            success=False,
+            data={},
+            message=str(e),
+        )
+    except PermissionDeniedError as e:
         await db.rollback()
         return ApplicationSubmitResponse(
             success=False,
@@ -225,7 +293,7 @@ async def mark_as_viewed(
             message=f"Application not found: {application_id}",
         )
     job_result = await db.execute(
-        select(Job).where(Job.id == application.job_id)
+        select(JobPosting).where(JobPosting.id == application.job_id)
     )
     job = job_result.scalar_one_or_none()
     if not job or job.enterprise_id != current_user["enterprise_id"]:
@@ -306,7 +374,7 @@ async def shortlist_candidate(
             message=f"Application not found: {application_id}",
         )
     job_result = await db.execute(
-        select(Job).where(Job.id == application.job_id)
+        select(JobPosting).where(JobPosting.id == application.job_id)
     )
     job = job_result.scalar_one_or_none()
     if not job or job.enterprise_id != current_user["enterprise_id"]:
@@ -388,7 +456,7 @@ async def reject_application(
             message=f"Application not found: {application_id}",
         )
     job_result = await db.execute(
-        select(Job).where(Job.id == application.job_id)
+        select(JobPosting).where(JobPosting.id == application.job_id)
     )
     job = job_result.scalar_one_or_none()
     if not job or job.enterprise_id != current_user["enterprise_id"]:
@@ -449,12 +517,25 @@ async def reject_application(
 async def get_application_events(
     application_id: str,
     db: AsyncSession = Depends(get_db),
+    current_agent: dict = Depends(verify_agent),
 ) -> ApplicationEventsResponse:
     """
     获取申请的所有事件（状态变更历史）。
 
     - **application_id**: 申请 ID
     """
+    # Verify ownership
+    app_result = await db.execute(
+        select(Application).where(Application.id == application_id)
+    )
+    application = app_result.scalar_one_or_none()
+    if not application or application.applicant_principal_id != current_agent.get("principal_id"):
+        return ApplicationEventsResponse(
+            success=False,
+            data={},
+            message="Not authorized to view this application",
+        )
+
     try:
         events = await application_service.get_application_events(db, application_id)
 

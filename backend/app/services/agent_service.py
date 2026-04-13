@@ -18,7 +18,7 @@ from app.services.identity_service import identity_service
 
 
 # Maximum allowed timestamp drift (seconds) for agent signature verification
-MAX_TIMESTAMP_DRIFT = 60  # 1 minute
+MAX_TIMESTAMP_DRIFT = 300  # 5 minutes
 
 
 class AgentService:

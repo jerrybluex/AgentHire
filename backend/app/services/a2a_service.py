@@ -218,11 +218,15 @@ class A2AService:
 
             await db.flush()
 
+            # 找到对应的application并自动解锁联系方式
+            contact_data = await self._exchange_contacts_for_a2a(db, session)
+
             return {
                 "success": True,
                 "status": "confirmed",
                 "session_id": session.id,
                 "contact_exchange": True,
+                "contact": contact_data,
                 "message": "Both parties confirmed. Contact information exchanged.",
             }
 
@@ -234,6 +238,65 @@ class A2AService:
             "session_id": session.id,
             "message": "Confirmation recorded. Waiting for other party.",
         }
+
+    async def _exchange_contacts_for_a2a(
+        self,
+        db: AsyncSession,
+        session: A2ASession,
+    ) -> dict:
+        """
+        A2A 双方确认后，实际交换联系方式。
+        查找对应的application，自动解锁contact。
+        决策：如果同一候选人多次申请同一职位，取最新的一条。
+        """
+        from app.models import Application, SeekerProfile, JobPosting
+        from app.services.contact_unlock_service import contact_unlock_service
+
+        # 查找该 profile_id + job_id 对应的 application（取最新一条）
+        app_result = await db.execute(
+            select(Application)
+            .where(
+                Application.profile_id == session.profile_id,
+                Application.job_id == session.job_id,
+            )
+            .order_by(Application.created_at.desc())  # 取最新
+            .limit(1)
+        )
+        application = app_result.scalar_one_or_none()
+
+        contact_info = {"seeker": None, "employer": None}
+
+        if application:
+            # 自动解锁 contact
+            try:
+                unlock = await contact_unlock_service.auto_unlock_for_a2a(db, application.id)
+                if unlock.status == "unlocked":
+                    # 获取求职者和企业的联系信息
+                    profile_result = await db.execute(
+                        select(SeekerProfile).where(SeekerProfile.id == session.profile_id)
+                    )
+                    profile = profile_result.scalar_one_or_none()
+                    if profile:
+                        contact_info["seeker"] = profile.contact
+
+                    job_result = await db.execute(
+                        select(JobPosting).where(JobPosting.id == session.job_id)
+                    )
+                    job = job_result.scalar_one_or_none()
+                    if job:
+                        # 企业联系信息从 JobPosting 的 enterprise_id 获取
+                        from app.models import Enterprise
+                        ent_result = await db.execute(
+                            select(Enterprise).where(Enterprise.id == job.enterprise_id)
+                        )
+                        enterprise = ent_result.scalar_one_or_none()
+                        if enterprise:
+                            contact_info["employer"] = enterprise.contact
+            except Exception:
+                # contact_unlock 失败不影响 A2A confirm
+                pass
+
+        return contact_info
 
     async def reject(
         self,

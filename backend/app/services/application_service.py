@@ -41,6 +41,11 @@ class ApplicationNotFoundError(ApplicationServiceError):
     pass
 
 
+class PermissionDeniedError(ApplicationServiceError):
+    """权限不足"""
+    pass
+
+
 class ApplicationService:
     """申请服务 - PRD v2 核心服务"""
 
@@ -112,7 +117,24 @@ class ApplicationService:
 
         Returns:
             更新后的 Application
+
+        Raises:
+            ApplicationNotFoundError: 申请不存在
+            PermissionDeniedError: 无权提交此申请
         """
+        # 获取申请并验证所有权
+        result = await db.execute(
+            select(Application).where(Application.id == application_id)
+        )
+        application = result.scalar_one_or_none()
+
+        if not application:
+            raise ApplicationNotFoundError(f"Application {application_id} not found")
+
+        # 验证是否为申请人本人提交
+        if actor_type == "agent" and application.applicant_principal_id != actor_id:
+            raise ApplicationServiceError(f"Permission denied: not the applicant")
+
         return await self._transition_status(
             db, application_id, "submitted", actor_type, actor_id
         )

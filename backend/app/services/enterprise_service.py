@@ -200,6 +200,14 @@ class EnterpriseService:
         if api_key.expires_at and api_key.expires_at < datetime.utcnow():
             return None
 
+        # Check enterprise is approved
+        enterprise_result = await db.execute(
+            select(Enterprise).where(Enterprise.id == api_key.enterprise_id)
+        )
+        enterprise = enterprise_result.scalar_one_or_none()
+        if not enterprise or enterprise.status != "approved":
+            return None
+
         return api_key.enterprise_id, api_key.id
 
     async def record_usage(

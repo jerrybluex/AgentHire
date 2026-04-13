@@ -3,6 +3,7 @@ Enterprise (B2B) API endpoints.
 Provides enterprise management, API keys, and billing.
 """
 
+import hashlib
 from datetime import datetime
 from typing import Optional
 
@@ -13,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.exceptions import ValidationException, NotFoundException, ConflictException, QuotaExceededException, AuthenticationException
-from app.models import Enterprise, EnterpriseAPIKey, EnterpriseVerificationCase, generate_id
+from app.models import Enterprise, EnterpriseAPIKey, EnterpriseVerificationCase, Application, JobPosting, generate_id
 from app.services.enterprise_service import enterprise_service, verify_password, hash_password
 from app.services.identity_service import identity_service
 from app.services.enterprise_verification_service import enterprise_verification_service
@@ -85,6 +86,14 @@ class EnterpriseListResponse(BaseModel):
     has_prev: bool = False
 
 
+class JobApplicationsResponse(BaseModel):
+    """Job applications list response."""
+
+    success: bool = True
+    data: list = Field(default_factory=list)
+    total: int = 0
+
+
 async def get_enterprise_from_header(
     x_enterprise_id: str = Header(..., description="Enterprise ID"),
     db: AsyncSession = Depends(get_db),
@@ -138,6 +147,19 @@ async def register_enterprise(
             name=f"{request.company_name} API Key",
         )
 
+        # Step 3b: Create EnterpriseAPIKey record for jobs endpoint authentication
+        api_key_hash = hashlib.sha256(api_key_plain.encode()).hexdigest()
+        enterprise_api_key = EnterpriseAPIKey(
+            id=credential.id,
+            enterprise_id=None,  # Will be set after enterprise is created
+            name=f"{request.company_name} API Key",
+            api_key_hash=api_key_hash,
+            api_key_prefix=api_key_plain[:12],
+            plan="pay_as_you_go",
+            rate_limit=100,
+            status="active",
+        )
+
         # Step 4: Create Enterprise record with tenant_id linkage
         enterprise = Enterprise(
             id=generate_id("ent_"),
@@ -154,6 +176,11 @@ async def register_enterprise(
             password_hash=hash_password(request.password) if request.password else None,
         )
         db.add(enterprise)
+        await db.flush()
+
+        # Set enterprise_id on the EnterpriseAPIKey and add to db
+        enterprise_api_key.enterprise_id = enterprise.id
+        db.add(enterprise_api_key)
         await db.flush()
 
         # Step 5: Create verification case (initial status: draft)
@@ -773,4 +800,58 @@ async def get_current_enterprise(
                 for k in api_keys
             ],
         },
+    )
+
+
+@router.get(
+    "/jobs/{job_id}/applications",
+    response_model=JobApplicationsResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get job applications",
+    description="Get all applications for a specific job (enterprise only)",
+)
+async def get_job_applications(
+    job_id: str,
+    api_key: dict = Depends(require_enterprise_api_key),
+    db: AsyncSession = Depends(get_db),
+) -> JobApplicationsResponse:
+    """
+    Get all applications for a specific job.
+
+    The API key must belong to an approved enterprise that owns the job.
+    """
+    enterprise_id = api_key["enterprise_id"]
+
+    # Verify job exists and belongs to the enterprise
+    job_result = await db.execute(
+        select(JobPosting).where(JobPosting.id == job_id)
+    )
+    job = job_result.scalar_one_or_none()
+
+    if not job:
+        raise NotFoundException(message=f"Job not found: {job_id}")
+
+    if job.enterprise_id != enterprise_id:
+        raise NotFoundException(message=f"Job not found: {job_id}")
+
+    # Get all applications for this job
+    apps_result = await db.execute(
+        select(Application).where(Application.job_id == job_id)
+    )
+    applications = apps_result.scalars().all()
+
+    return JobApplicationsResponse(
+        success=True,
+        data=[
+            {
+                "application_id": app.id,
+                "profile_id": app.profile_id,
+                "status": app.status,
+                "cover_letter": app.cover_letter,
+                "created_at": app.created_at.isoformat() if app.created_at else None,
+                "updated_at": app.updated_at.isoformat() if app.updated_at else None,
+            }
+            for app in applications
+        ],
+        total=len(applications),
     )

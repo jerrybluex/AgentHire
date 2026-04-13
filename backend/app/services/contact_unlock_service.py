@@ -162,6 +162,37 @@ class ContactUnlockService:
         )
         return result.scalar_one_or_none()
 
+    async def auto_unlock_for_a2a(
+        self,
+        db: AsyncSession,
+        application_id: str,
+    ) -> ContactUnlock:
+        """
+        A2A 双方确认后自动解锁联系方式。
+        由于双方已通过 A2A 协议确认，直接设置为 unlocked 状态。
+        """
+        # 检查是否已有解锁记录
+        existing = await self.get_by_application(db, application_id)
+        if existing:
+            if existing.status == "unlocked":
+                return existing
+            # 如果已存在但不是 unlocked，尝试转换
+            if existing.status == "candidate_authorized":
+                return await self.employer_unlock(db, existing.id, employer_id="a2a_system")
+            return existing
+
+        # 创建新的解锁记录并直接解锁
+        unlock = ContactUnlock(
+            id=generate_contact_unlock_id(),
+            application_id=application_id,
+            status="unlocked",  # A2A 双方确认后直接解锁
+            authorized_at=datetime.now(timezone.utc),
+            unlocked_at=datetime.now(timezone.utc),
+        )
+        db.add(unlock)
+        await db.flush()
+        return unlock
+
 
 # Singleton
 contact_unlock_service = ContactUnlockService()

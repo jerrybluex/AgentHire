@@ -51,6 +51,10 @@ class DatabaseManager:
         """Get or create the database engine."""
         if self._engine is None:
             settings = get_settings()
+            connect_args = {}
+            # SQLite requires explicit UTF-8 encoding on Windows
+            if "sqlite" in settings.database.url.lower():
+                connect_args["check_same_thread"] = False
             self._engine = create_async_engine(
                 settings.database.url,
                 echo=settings.database.echo,
@@ -58,6 +62,7 @@ class DatabaseManager:
                 max_overflow=settings.database.max_overflow,
                 pool_pre_ping=True,
                 pool_recycle=3600,
+                connect_args=connect_args,
             )
         return self._engine
 
