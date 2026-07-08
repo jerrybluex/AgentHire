@@ -48,7 +48,7 @@ class AgentFactory:
             type=type,
             platform=platform,
             user_id=user_id or generate_id("usr_"),
-            agent_secret_hash=hash_secret("test_secret"),
+            api_secret_encrypted=hash_secret("test_secret"),
             contact={"email": "test@example.com"},
             status=status,
             created_at=datetime.utcnow(),
